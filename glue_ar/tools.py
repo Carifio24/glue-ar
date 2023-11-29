@@ -6,7 +6,7 @@ from glue.config import viewer_tool
 from glue.viewers.common.tool import Tool
 
 from glue_ar.common import create_plotter
-from glue_ar.scatter import scatter_layer_as_multiblock
+from glue_ar.scatter import scatter_layer_as_multiblock, scatter_layer_as_points
 from glue_ar.export import export_gltf_with_alpha, export_modelviewer
 
 __all__ = ["GLTFExportTool"]
@@ -26,6 +26,7 @@ class GLTFExportTool(Tool):
 
     def activate(self):
         plotter = create_plotter(pv.Plotter.add_mesh, scatter_layer_as_multiblock, self.viewer.state)
-        export_gltf_with_alpha(plotter, "test.gltf")
+        plotter.export_obj("test.obj")
+        # export_gltf_with_alpha(plotter, "test.gltf")
         export_modelviewer("test.html", "test.gltf", "Testing visualization")
 
