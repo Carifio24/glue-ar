@@ -11,18 +11,38 @@ from echo.qt import autoconnect_callbacks_to_qt
 
 __all__ = ["ExportScatterDialog"]
 
+
+class BaseExportDialogState(State):
+
+    filetype = SelectionCallbackProperty()
+    layer = SelectionCallbackProperty()
+
+
+class BaseExportDialog(QDialog):
+
+    def __init__(self, parent=None, viewer_state=None):
+
+        super(BaseExportDialog, self).__init__(parent=parent)
+
+        self.viewer_state = viewer_state
+        self.state = self._state_cls(self.viewer_state)
+
+
+class ScatterLayerExportState(BaseExportDialogState):
+
+    theta_resolution = CallbackProperty(8)
+    phi_resolution = CallbackProperty(8)
+
+
 # Note that this class only holds the state that is
 # currently displayed in the dialog. In particular,
 # this means that `theta_resolution` and `phi_resolution`
 # represent the resolutions for `layer`
-class ExportScatterDialogState(State):
-
-    filetype = SelectionCallbackProperty()
-    layer = SelectionCallbackProperty()
-    theta_resolution = CallbackProperty(8)
-    phi_resolution = CallbackProperty(8)
+class ExportScatterDialogState(BaseExportDialogState):
 
     def __init__(self, viewer_state):
+
+        self.layer_state = ExportScatterDialogState(viewer_state)
 
         super(ExportScatterDialogState, self).__init__()
 
