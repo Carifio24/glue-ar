@@ -1,3 +1,5 @@
+from math import floor
+
 import pyvista as pv
 from glue_ar.utils import layer_color, xyz_bounds, xyz_for_layer
 
@@ -33,17 +35,35 @@ def scatter_layer_as_glyphs(viewer_state, layer_state, glyph):
     }
 
 
+def rescale_spheres(mesh, viewer_state, data):
+    bounds = xyz_bounds(viewer_state)
+    factors = [abs(b[1] - b[0]) for b in bounds]
+    n_spheres = len(data)
+    points_per_sphere = len(mesh.points) / n_spheres
+    for index, point in enumerate(mesh.points):
+        sphere = floor(index / points_per_sphere)
+        data_point = data[sphere]
+        ds = point - data_point
+        mesh.points[index] = [c + d / f for c, d, f in zip(data_point, ds, factors)]
+
+
 def scatter_layer_as_multiblock(viewer_state, layer_state,
                                 theta_resolution=8,
                                 phi_resolution=8,
                                 scaled=True):
-    data = xyz_for_layer(viewer_state, layer_state, scaled=scaled)
+    data = xyz_for_layer(viewer_state, layer_state, scaled=scaled, preserve_aspect=viewer_state.native_aspect)
     bounds = xyz_bounds(viewer_state)
     factor = max((abs(b[1] - b[0]) for b in bounds))
-    radius = layer_state.size_scaling * layer_state.size / factor
+    radius = layer_state.size_scaling * layer_state.size
+    if viewer_state.native_aspect:
+        radius /= factor
     spheres = [pv.Sphere(center=p, radius=radius, phi_resolution=phi_resolution, theta_resolution=theta_resolution) for p in data]
     blocks = pv.MultiBlock(spheres)
     geometry = blocks.extract_geometry()
+
+    if not viewer_state.native_aspect:
+        rescale_spheres(geometry, viewer_state, data)
+
     info = {
         "data": geometry,
         "opacity": layer_state.alpha
@@ -66,4 +86,5 @@ def scatter_layer_as_multiblock(viewer_state, layer_state,
         info["cmap"] = cmap
         info["clim"] = clim
         info["scalars"] = "colors"
+
     return info
