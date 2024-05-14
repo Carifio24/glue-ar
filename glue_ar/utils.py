@@ -1,5 +1,16 @@
 from glue.core.subset_group import GroupedSubset
-from numpy import array, half, inf
+from numpy import array, inf
+
+try:
+    from glue_qt.viewers.common.data_viewer import DataViewer
+except ImportError:
+    DataViewer = type(None)
+
+# TODO: Add implementation for bqplot viewers?
+def viewer_size(viewer):
+    if isinstance(viewer, DataViewer):
+        return viewer.width(), viewer.height()
+    return 1200, 600
 
 
 def isomin_for_layer(viewer_state, layer):

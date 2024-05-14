@@ -104,6 +104,7 @@ def meshes_for_error_bars(viewer_state, layer_state, axis, data, bounds, mask=No
 # This function creates a multiblock mesh for a given scatter layer
 # Everything is scaled into clip space for better usability with e.g. model-viewer
 def scatter_layer_as_multiblock(viewer_state, layer_state,
+                                size,
                                 theta_resolution=8,
                                 phi_resolution=8,
                                 clip_to_bounds=True,
@@ -122,9 +123,10 @@ def scatter_layer_as_multiblock(viewer_state, layer_state,
                          preserve_aspect=viewer_state.native_aspect,
                          mask=mask,
                          scaled=scaled)
-    factor = max((abs(b[1] - b[0]) for b in bounds))
+    viewer_area = size[0] * size[1]
+    factor = 10
     if layer_state.size_mode == "Fixed":
-        radius = layer_state.size_scaling * sqrt((layer_state.size)) / (10 * factor)
+        radius = factor * layer_state.size_scaling * sqrt(layer_state.size / viewer_area)
         spheres = [pv.Sphere(center=p, radius=radius,
                              phi_resolution=phi_resolution,
                              theta_resolution=theta_resolution) for p in data]
@@ -137,11 +139,11 @@ def scatter_layer_as_multiblock(viewer_state, layer_state,
         else:
             sizes = sqrt((20 * (size_data - layer_state.size_vmin) /
                      (layer_state.size_vmax - layer_state.size_vmin)))
-        sizes *= (layer_state.size_scaling / factor)
+        sizes *= (factor * layer_state.size_scaling / sqrt(viewer_area))
         sizes[isnan(sizes)] = 0.
-        spheres = [pv.Sphere(center=p, radius=r,
+        spheres = [pv.Sphere(center=p, radius=sqrt(s),
                              phi_resolution=phi_resolution,
-                             theta_resolution=theta_resolution) for p, r in zip(data, sizes)]
+                             theta_resolution=theta_resolution) for p, s in zip(data, sizes)]
 
     if not fixed_color:
         points_per_sphere = 2 + (phi_resolution - 2) * theta_resolution

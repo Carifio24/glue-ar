@@ -24,7 +24,7 @@ from glue_ar.scatter import scatter_layer_as_multiblock
 from glue_ar.export import export_gl, export_modelviewer
 from glue_ar.exporting_dialog import ExportingDialog
 from glue_ar.server import run_ar_server
-from glue_ar.utils import bounds_3d_from_layers, xyz_bounds
+from glue_ar.utils import bounds_3d_from_layers, viewer_size, xyz_bounds
 from glue_ar.volume import bounds_3d, meshes_for_volume_layer
 
 
@@ -61,7 +61,8 @@ def create_plotter(viewer, state_dictionary):
                                              precomputed_frbs=frbs,
                                              **layer_info)
         else:
-            meshes = scatter_layer_as_multiblock(viewer.state, layer_state,
+            size = viewer_size(viewer)
+            meshes = scatter_layer_as_multiblock(viewer.state, layer_state, size,
                                                  scaled=scatter_viewer,
                                                  clip_to_bounds=viewer.state.clip_data,
                                                  **layer_info)
