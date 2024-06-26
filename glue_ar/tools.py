@@ -25,7 +25,7 @@ from glue_ar.export import compress_gl, export_gl, export_modelviewer
 from glue_ar.exporting_dialog import ExportingDialog
 from glue_ar.server import run_ar_server
 from glue_ar.utils import bounds_3d_from_layers, xyz_bounds
-from glue_ar.volume import bounds_3d, meshes_for_volume_layer
+from glue_ar.volume import bounds_3d, meshes_for_volume_layer, volume_layer_as_multiblock
 
 
 __all__ = ["ARToolMenu", "ARExportTool", "ARLocalQRTool"]
@@ -56,7 +56,7 @@ def create_plotter(viewer, state_dictionary):
         if layer_info:
             layer_info = layer_info.as_dict()
         if isinstance(layer_state, VolumeLayerState):
-            meshes = meshes_for_volume_layer(viewer.state, layer_state,
+            meshes = volume_layer_as_multiblock(viewer.state, layer_state,
                                              bounds=bounds,
                                              precomputed_frbs=frbs,
                                              **layer_info)
@@ -103,12 +103,15 @@ class ARExportTool(Tool):
 
         _, ext = splitext(export_path)
         filetype = _FILETYPE_NAMES.get(ext, None)
-        worker = Worker(self._export_to_ar, export_path, dialog.state_dictionary, compress=dialog.state.draco)
-        exporting_dialog = ExportingDialog(parent=self.viewer, filetype=filetype)
-        worker.result.connect(exporting_dialog.close)
-        worker.error.connect(exporting_dialog.close)
-        worker.start()
-        exporting_dialog.exec_()
+
+        self._export_to_ar(export_path, dialog.state_dictionary, compress=dialog.state.draco)
+
+        # worker = Worker(self._export_to_ar, export_path, dialog.state_dictionary, compress=dialog.state.draco)
+        # exporting_dialog = ExportingDialog(parent=self.viewer, filetype=filetype)
+        # worker.result.connect(exporting_dialog.close)
+        # worker.error.connect(exporting_dialog.close)
+        # worker.start()
+        # exporting_dialog.exec_()
 
     def _export_to_ar(self, filepath, state_dict, compress=True):
         dir, base = split(filepath)

@@ -1,3 +1,5 @@
+from re import match
+
 from glue.core.subset_group import GroupedSubset
 from numpy import array, inf
 
@@ -97,3 +99,50 @@ def xyz_for_layer(viewer_state, layer_state,
         vals = bring_into_clip(vals, bounds, preserve_aspect=preserve_aspect)
 
     return array(list(zip(*vals)))
+
+
+## Color utilities
+DECIMAL_PATTERN = "\\d+\\.?\\d*"
+RGBA_PATTERN = f"rgba\\(({DECIMAL_PATTERN}),\\s*({DECIMAL_PATTERN}),\\s*({DECIMAL_PATTERN}),\\s*({DECIMAL_PATTERN})\\)"
+
+
+def rgba_string_to_values(rgba_str):
+    m = match(RGBA_PATTERN, rgba_str)
+    if not m or len(m.groups()) != 4:
+        raise ValueError("Invalid RGBA expression")
+    r, g, b, a = m.groups()
+    return [int(t) for t in (r, g, b, a)]
+
+
+def is_rgba_hex(color):
+    return color.startswith("#") and len(color) == 9
+
+
+def is_rgb_hex(color):
+    return color.startswith("#") and len(color) == 7
+
+
+def hex_string(number):
+    return format(number, '02x')
+
+
+def rgb_hex_to_rgba_hex(color, opacity=1):
+    return f"{color}{hex_string(opacity)}"
+
+
+def hex_to_components(color):
+    return [int(color[idx:idx+2], 16) for idx in range(1, len(color), 2)]
+
+
+def rgba_components(color):
+    if is_rgb_hex(color):
+        color = rgb_hex_to_rgba_hex(color)
+    if is_rgba_hex(color):
+        return hex_to_components(color)
+    else:
+        return rgba_string_to_values(color)
+
+
+def hex_color(r, g, b, a=None):
+    hex_components = [hex_string(int(c)) for c in (r, g, b, a) if c is not None]
+    return f"#{''.join(hex_components)}"

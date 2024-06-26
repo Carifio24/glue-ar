@@ -1,13 +1,11 @@
 import os
+import sys
 
+sys.path.append(".")
 from setupbase import (
     create_cmdclass,
     install_npm,
-    ensure_targets,
-    find_packages,
     combine_commands,
-    get_version,
-    HERE,
 )
 
 from setuptools import setup
