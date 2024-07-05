@@ -104,7 +104,7 @@ def create_voxel_export(
     materials = [create_material_for_color(color_components, i / n_opacities) for i in range(n_opacities + 1)]
 
     # resolution = int(viewer_state.resolution)
-    resolution = 64 
+    resolution = 50 
     bounds = [
         (viewer_state.z_min, viewer_state.z_max, resolution),
         (viewer_state.y_min, viewer_state.y_max, resolution),
@@ -145,14 +145,16 @@ def create_voxel_export(
     buffer_views = []
     accessors = []
     meshes = []
-    points_barr = bytearray()
-    triangles_barr = bytearray()
-    points_bin = "points.bin"
-    triangles_bin = "triangles.bin"
+    buffers = []
+    file_resources = []
     voxel_count = resolution ** 3
 
+    count = 0
     for indices in product(range(resolution), repeat=3):
         center = tuple((index + 0.5) * side for index, side in zip(indices, clip_sides))
+
+        points_bin = f"points_{count}.bin"
+        triangles_bin = f"triangles_{count}.bin"
 
         pts, tris = rectangular_prism_mesh(center, clip_sides, start_index=point_index)
         point_index += len(pts)
@@ -160,11 +162,11 @@ def create_voxel_export(
         adjusted_value = (value - isomin) / (isomax - isomin)
         material_index = floor(adjusted_value * n_opacities)
 
-        prev_ptbarr_len = len(points_barr)
-        prev_tribarr_len = len(triangles_barr)
+        points_barr = bytearray()
         for pt in pts:
             for coord in pt:
                 points_barr.extend(struct.pack('f', coord))
+        triangles_barr = bytearray()
         for tri in tris:
             for idx in tri:
                 triangles_barr.extend(struct.pack('I', idx))
@@ -176,13 +178,13 @@ def create_voxel_export(
         tri_mins = [min([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
         tri_maxes = [max([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
 
-        # We're going to use two buffers
-        # The first one (index 0) for the points
-        # and the second one (index 1) for the triangles
+        buffers.append(
+            Buffer(byteLength=ptbarr_len, uri=points_bin)
+        )
         buffer_views.append(
-            BufferView(buffer=0,
-                       byteLength=ptbarr_len-prev_ptbarr_len,
-                       byteOffset=prev_ptbarr_len,
+            BufferView(buffer=len(buffers)-1,
+                       byteLength=ptbarr_len,
+                       byteOffset=0,
                        target=BufferTarget.ARRAY_BUFFER.value,
             )
         )
@@ -195,10 +197,14 @@ def create_voxel_export(
                      max=pt_maxes,
             )
         )
+
+        buffers.append(
+            Buffer(byteLength=tribarr_len, uri=triangles_bin)
+        )
         buffer_views.append(
-            BufferView(buffer=1,
-                       byteLength=tribarr_len-prev_tribarr_len,
-                       byteOffset=prev_tribarr_len,
+            BufferView(buffer=len(buffers)-1,
+                       byteLength=tribarr_len,
+                       byteOffset=0,
                        target=BufferTarget.ELEMENT_ARRAY_BUFFER.value,
             )
         )
@@ -220,17 +226,19 @@ def create_voxel_export(
             )
         )
 
+        file_resources.append(
+            FileResource(points_bin, data=points_barr)
+        )
+        file_resources.append(
+            FileResource(triangles_bin, data=triangles_barr)
+        )
 
-    points_buffer = Buffer(byteLength=len(points_barr), uri=points_bin)
-    triangles_buffer = Buffer(byteLength=len(triangles_barr), uri=triangles_bin)
-    buffers = [points_buffer, triangles_buffer]
+        count += 1
+
 
     nodes = [Node(mesh=i) for i in range(len(meshes))]
 
-    file_resources = [
-        FileResource(points_bin, data=points_barr),
-        FileResource(triangles_bin, data=triangles_barr),
-    ]
+
     
     node_indices = list(range(len(nodes)))
 
@@ -245,15 +253,15 @@ def create_voxel_export(
         materials=materials
     )
     gltf = GLTF(model=model, resources=file_resources)
-    filepath = "voxel_test.gltf"
-    gltf.export(filepath)
+    gltf_filepath = "voxel_test.gltf"
+    glb_filepath = "voxel_test.glb"
+    # gltf.export(gltf_filepath)
+    gltf.export(glb_filepath)
     # print("About to compress")
     # compress_gl(filepath)
 
 
 def test_prism_mesh():
-
-
 
     center = (0, 0, 0)
     sides = (1, 1, 3)
