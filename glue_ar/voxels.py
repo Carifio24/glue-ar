@@ -140,8 +140,10 @@ def create_voxel_export(
     print(clip_sides)
 
     point_index = 0
-    points = []
-    triangles = []
+    point_mins = []
+    point_maxes = []
+    buffer_views = []
+    accessors = []
     material_indices = []
     points_barr = bytearray()
     triangles_barr = bytearray()
@@ -160,45 +162,41 @@ def create_voxel_export(
         adjusted_value = (value - isomin) / (isomax - isomin)
         index = floor(adjusted_value * n_opacities)
         material_indices.append(index)
-        points.append(pts)
-        triangles.append(tris)
 
-        point_offsets.append(len(points_barr))
-        triangle_offsets.append(len(triangles_barr))
+        prev_ptbarr_len = len(points_barr)
+        prev_tribarr_len = len(triangles_barr)
         for pt in pts:
             for coord in pt:
                 points_barr.extend(struct.pack('f', coord))
         for tri in tris:
             for idx in tri:
                 triangles_barr.extend(struct.pack('I', idx))
+        ptbarr_len = len(points_barr)
+        tribarr_len = len(triangles_barr)
+
+        pt_mins = [min([operator.itemgetter(i)(pt) for pt in pts]) for i in range(3)]
+        pt_maxes = [max([operator.itemgetter(i)(pt) for pt in pts]) for i in range(3)]
+
+        buffer_views.append(
+            BufferView(buffer=0,
+                       byteLength=ptbarr_len-prev_ptbarr_len,
+                       byteOffset=prev_ptbarr_len,
+                       target=BufferTarget.ARRAY_BUFFER.value,
+            )
+        )
+        buffer_views.append(
+            BufferView(buffer=1,
+                       byteLength=tribarr_len-prev_tribarr_len,
+                       byteOffset=prev_tribarr_len,
+                       target=BufferTarget.ELEMENT_ARRAY_BUFFER.value,
+            )
+        )
+
 
     points_buffer = Buffer(byteLength=len(points_barr), uri=points_bin)
     triangles_buffer = Buffer(byteLength=len(triangles_barr), uri=triangles_bin)
     buffers = [points_buffer, triangles_buffer]
-    point_buffer_views = [
-        BufferView(buffer=0,
-                   byteLength=point_offsets[i+1] - point_offsets[i],
-                   byteOffset=point_offsets[i],
-                   target=BufferTarget.ARRAY_BUFFER.value,
-        ) for i in range(voxel_count)
-    ]
-    triangle_buffer_views = [
-        BufferView(buffer=1,
-                   byteLength=triangle_offsets[i+1] - triangle_offsets[i],
-                   byteOffset=triangle_offsets[i],
-                   target=BufferTarget.ELEMENT_ARRAY_BUFFER.value,
-        ) for i in range(voxel_count)
-    ]
-    buffer_views = point_buffer_views + triangle_buffer_views
 
-    point_mins = [
-        [min([operator.itemgetter(i)(pt) for pt in pts]) for i in range(3)]
-        for pts in points
-    ]
-    point_maxes = [
-        [max([operator.itemgetter(i)(pt) for pt in pts]) for i in range(3)]
-        for pts in points
-    ]
     triangle_mins = [
         [min([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
         for tris in triangles 

@@ -49,7 +49,7 @@ def slope_intercept_between(a, b):
 def layer_color(layer_state):
     layer_color = layer_state.color
     if layer_color == '0.35' or layer_color == '0.75':
-        layer_color = 'gray'
+        layer_color = '#808080'
     return layer_color
 
 
@@ -97,3 +97,7 @@ def xyz_for_layer(viewer_state, layer_state,
         vals = bring_into_clip(vals, bounds, preserve_aspect=preserve_aspect)
 
     return array(list(zip(*vals)))
+
+
+def hex_to_components(color):
+    return [int(color[idx:idx+2], 16) for idx in range(1, len(color), 2)]
