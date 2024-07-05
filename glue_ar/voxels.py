@@ -7,6 +7,7 @@ import struct
 
 from glue_vispy_viewers.volume.layer_state import VolumeLayerState
 from glue_vispy_viewers.volume.viewer_state import Vispy3DVolumeViewerState
+from glue_ar.export import compress_gl
 
 from glue_ar.utils import hex_to_components, isomin_for_layer, isomax_for_layer, layer_color
 
@@ -87,7 +88,8 @@ def create_material_for_color(
                 baseColorFactor=color[:3] + [opacity],
                 roughnessFactor=1,
                 metallicFactor=0
-            )
+            ),
+            alphaMode="BLEND"
     )
 
 
@@ -102,7 +104,7 @@ def create_voxel_export(
     materials = [create_material_for_color(color_components, i / n_opacities) for i in range(n_opacities + 1)]
 
     # resolution = int(viewer_state.resolution)
-    resolution = 128
+    resolution = 64 
     bounds = [
         (viewer_state.z_min, viewer_state.z_max, resolution),
         (viewer_state.y_min, viewer_state.y_max, resolution),
@@ -140,17 +142,13 @@ def create_voxel_export(
     print(clip_sides)
 
     point_index = 0
-    point_mins = []
-    point_maxes = []
     buffer_views = []
     accessors = []
-    material_indices = []
+    meshes = []
     points_barr = bytearray()
     triangles_barr = bytearray()
     points_bin = "points.bin"
     triangles_bin = "triangles.bin"
-    point_offsets = [0]
-    triangle_offsets = [0]
     voxel_count = resolution ** 3
 
     for indices in product(range(resolution), repeat=3):
@@ -160,8 +158,7 @@ def create_voxel_export(
         point_index += len(pts)
         value = data[*indices]
         adjusted_value = (value - isomin) / (isomax - isomin)
-        index = floor(adjusted_value * n_opacities)
-        material_indices.append(index)
+        material_index = floor(adjusted_value * n_opacities)
 
         prev_ptbarr_len = len(points_barr)
         prev_tribarr_len = len(triangles_barr)
@@ -176,12 +173,26 @@ def create_voxel_export(
 
         pt_mins = [min([operator.itemgetter(i)(pt) for pt in pts]) for i in range(3)]
         pt_maxes = [max([operator.itemgetter(i)(pt) for pt in pts]) for i in range(3)]
+        tri_mins = [min([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
+        tri_maxes = [max([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
 
+        # We're going to use two buffers
+        # The first one (index 0) for the points
+        # and the second one (index 1) for the triangles
         buffer_views.append(
             BufferView(buffer=0,
                        byteLength=ptbarr_len-prev_ptbarr_len,
                        byteOffset=prev_ptbarr_len,
                        target=BufferTarget.ARRAY_BUFFER.value,
+            )
+        )
+        accessors.append(
+            Accessor(bufferView=len(buffer_views)-1,
+                     componentType=ComponentType.FLOAT.value,
+                     count=len(pts),
+                     type=AccessorType.VEC3.value,
+                     min=pt_mins,
+                     max=pt_maxes,
             )
         )
         buffer_views.append(
@@ -191,50 +202,28 @@ def create_voxel_export(
                        target=BufferTarget.ELEMENT_ARRAY_BUFFER.value,
             )
         )
+        accessors.append(
+            Accessor(bufferView=len(buffer_views)-1,
+                     componentType=ComponentType.UNSIGNED_INT.value,
+                     count=len(tris) * 3,
+                     type=AccessorType.SCALAR.value,
+                     min=tri_mins,
+                     max=tri_maxes,
+            )
+        )
+        meshes.append(
+            Mesh(primitives=[
+                Primitive(attributes=Attributes(POSITION=len(accessors)-2),
+                          indices=len(accessors)-1,
+                          material=material_index,
+                )]
+            )
+        )
 
 
     points_buffer = Buffer(byteLength=len(points_barr), uri=points_bin)
     triangles_buffer = Buffer(byteLength=len(triangles_barr), uri=triangles_bin)
     buffers = [points_buffer, triangles_buffer]
-
-    triangle_mins = [
-        [min([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
-        for tris in triangles 
-    ]
-    triangle_maxes = [
-        [max([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
-        for tris in triangles 
-    ]
-    point_accessors = [
-        Accessor(bufferView=i,
-                 componentType=ComponentType.FLOAT.value,
-                 count=len(points[i]),
-                 type=AccessorType.VEC3.value,
-                 min=point_mins[i],
-                 max=point_maxes[i],
-        ) for i in range(len(point_buffer_views))
-    ]
-    n_point_bufviews = len(point_buffer_views)
-    triangle_accessors = [
-        Accessor(bufferView=i+n_point_bufviews,
-                 componentType=ComponentType.UNSIGNED_INT.value,
-                 count=len(triangles[i])*3,
-                 type=AccessorType.SCALAR.value,
-                 min=triangle_mins[i],
-                 max=triangle_maxes[i]
-        ) for i in range(len(triangle_buffer_views))
-    ]
-    n_point_accessors = len(point_accessors)
-    accessors = point_accessors + triangle_accessors
-
-    meshes = [
-        Mesh(primitives=[
-            Primitive(attributes=Attributes(POSITION=i),
-                      indices=i+n_point_accessors,
-                      material=material_indices[i],
-            )]
-        ) for i in range(n_point_accessors)
-    ]
 
     nodes = [Node(mesh=i) for i in range(len(meshes))]
 
@@ -256,7 +245,10 @@ def create_voxel_export(
         materials=materials
     )
     gltf = GLTF(model=model, resources=file_resources)
-    gltf.export("voxel_test.glb")
+    filepath = "voxel_test.gltf"
+    gltf.export(filepath)
+    # print("About to compress")
+    # compress_gl(filepath)
 
 
 def test_prism_mesh():
