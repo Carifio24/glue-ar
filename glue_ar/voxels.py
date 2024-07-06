@@ -1,6 +1,6 @@
 from math import floor
 from itertools import product
-from numpy import isfinite, linspace
+from numpy import isfinite, linspace, argwhere
 from os.path import join
 import operator
 import struct
@@ -42,10 +42,14 @@ def bring_into_clip(points, transforms):
     return [tuple(transform[0] * c + transform[1] for transform, c in zip(transforms, pt)) for pt in points]
 
 
-def rectangular_prism_mesh(center, sides, start_index=0):
+def rectangular_prism_points(center, sides):
     side_diffs = [(-s / 2, s / 2) for s in sides]
     diffs = product(*side_diffs)
     points = [tuple(c - d for c, d in zip(center, diff)) for diff in diffs]
+    return points
+
+
+def rectangular_prism_triangulation(start_index=0):
     triangles = [
         # side
         (start_index + 0, start_index + 2, start_index + 1),
@@ -72,7 +76,7 @@ def rectangular_prism_mesh(center, sides, start_index=0):
         (start_index + 7, start_index + 1, start_index + 3),
     ]
 
-    return points, triangles
+    return triangles
 
 
 def offset_triangles(triangle_indices, offset):
@@ -83,9 +87,10 @@ def create_material_for_color(
     color: List[int],
     opacity: float
 ) -> Material:
+    rgb = [t / 256 for t in color[:3]]
     return Material(
             pbrMetallicRoughness=PBRMetallicRoughness(
-                baseColorFactor=color[:3] + [opacity],
+                baseColorFactor=rgb + [opacity],
                 roughnessFactor=1,
                 metallicFactor=0
             ),
@@ -98,13 +103,13 @@ def create_voxel_export(
     layer_state: VolumeLayerState,
     precomputed_frbs=None
 ):
-    n_opacities = 16
+    n_opacities = 100
     color = layer_color(layer_state)
     color_components = hex_to_components(color)
     materials = [create_material_for_color(color_components, i / n_opacities) for i in range(n_opacities + 1)]
 
     # resolution = int(viewer_state.resolution)
-    resolution = 64 
+    resolution = 256
     bounds = [
         (viewer_state.z_min, viewer_state.z_max, resolution),
         (viewer_state.y_min, viewer_state.y_max, resolution),
@@ -123,23 +128,24 @@ def create_voxel_export(
 
     data[~isfinite(data)] = isomin - 1
 
+    # data = data.transpose(0, 2, 1)
+
     x_range = viewer_state.x_max - viewer_state.x_min
     y_range = viewer_state.y_max - viewer_state.y_min
     z_range = viewer_state.z_max - viewer_state.z_min
     x_spacing = x_range / resolution
     y_spacing = y_range / resolution
     z_spacing = z_range / resolution
-    sides = (x_spacing, y_spacing, z_spacing)
+    sides = (z_spacing, x_spacing, y_spacing)
 
     world_bounds = (
+        (viewer_state.z_min, viewer_state.z_max),
         (viewer_state.x_min, viewer_state.x_max),
         (viewer_state.y_min, viewer_state.y_max),
-        (viewer_state.z_min, viewer_state.z_max),
     )
-    world_positions = [linspace(bds[0], bds[1], resolution) for bds in world_bounds]
+    # world_positions = [linspace(bds[0], bds[1], resolution) for bds in world_bounds]
     clip_transforms = clip_linear_transformations(world_bounds, clip_size=1)
     clip_sides = [s * transform[0] for s, transform in zip(sides, clip_transforms)]
-    print(clip_sides)
 
     point_index = 0
     buffer_views = []
@@ -149,32 +155,59 @@ def create_voxel_export(
     triangles_barr = bytearray()
     points_bin = "points.bin"
     triangles_bin = "triangles.bin"
-    voxel_count = resolution ** 3
 
-    for indices in product(range(resolution), repeat=3):
+    triangles = rectangular_prism_triangulation()
+    triangles_barr = bytearray()
+    for triangle in triangles:
+        for idx in triangle:
+            triangles_barr.extend(struct.pack('I', idx))
+    triangle_barrlen = len(triangles_barr)
+
+    buffer_views = [
+        BufferView(buffer=1,
+                   byteLength=triangle_barrlen,
+                   byteOffset=0,
+                   target=BufferTarget.ELEMENT_ARRAY_BUFFER.value,
+        )
+    ]
+
+    accessors = [
+        Accessor(bufferView=0,
+                 componentType=ComponentType.UNSIGNED_INT.value,
+                 count=len(triangles) * 3,
+                 type=AccessorType.SCALAR.value,
+                 min=[0],
+                 max=[7]
+        )
+    ]
+
+    opacity_cutoff = 0.1
+    opacity_factor = 0.75
+    isorange = isomax - isomin
+    nonempty_indices = argwhere(layer_state.alpha * opacity_factor * (data - isomin) / isorange)
+    print(nonempty_indices[0])
+    for indices in nonempty_indices:
         center = tuple((index + 0.5) * side for index, side in zip(indices, clip_sides))
 
-        pts, tris = rectangular_prism_mesh(center, clip_sides, start_index=point_index)
+        pts = rectangular_prism_points(center, clip_sides)
         point_index += len(pts)
         value = data[*indices]
-        adjusted_value = (value - isomin) / (isomax - isomin)
+        adjusted_value = min(max(layer_state.alpha * opacity_factor * (value - isomin) / isorange, 0), 1)
+        print(adjusted_value)
+        if adjusted_value < opacity_cutoff:
+            continue
+
+        print("Keeping it!")
         material_index = floor(adjusted_value * n_opacities)
 
         prev_ptbarr_len = len(points_barr)
-        prev_tribarr_len = len(triangles_barr)
         for pt in pts:
             for coord in pt:
                 points_barr.extend(struct.pack('f', coord))
-        for tri in tris:
-            for idx in tri:
-                triangles_barr.extend(struct.pack('I', idx))
         ptbarr_len = len(points_barr)
-        tribarr_len = len(triangles_barr)
 
         pt_mins = [min([operator.itemgetter(i)(pt) for pt in pts]) for i in range(3)]
         pt_maxes = [max([operator.itemgetter(i)(pt) for pt in pts]) for i in range(3)]
-        tri_mins = [min([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
-        tri_maxes = [max([operator.itemgetter(i)(tri) for tri in tris]) for i in range(3)]
 
         # We're going to use two buffers
         # The first one (index 0) for the points
@@ -195,30 +228,17 @@ def create_voxel_export(
                      max=pt_maxes,
             )
         )
-        buffer_views.append(
-            BufferView(buffer=1,
-                       byteLength=tribarr_len-prev_tribarr_len,
-                       byteOffset=prev_tribarr_len,
-                       target=BufferTarget.ELEMENT_ARRAY_BUFFER.value,
-            )
-        )
-        accessors.append(
-            Accessor(bufferView=len(buffer_views)-1,
-                     componentType=ComponentType.UNSIGNED_INT.value,
-                     count=len(tris) * 3,
-                     type=AccessorType.SCALAR.value,
-                     min=tri_mins,
-                     max=tri_maxes,
-            )
-        )
         meshes.append(
             Mesh(primitives=[
-                Primitive(attributes=Attributes(POSITION=len(accessors)-2),
-                          indices=len(accessors)-1,
+                Primitive(attributes=Attributes(POSITION=len(accessors)-1),
+                          indices=0,
                           material=material_index,
                 )]
             )
         )
+
+    print(len(accessors))
+    print(resolution ** 3)
 
 
     points_buffer = Buffer(byteLength=len(points_barr), uri=points_bin)
@@ -245,10 +265,12 @@ def create_voxel_export(
         materials=materials
     )
     gltf = GLTF(model=model, resources=file_resources)
-    filepath = "voxel_test.gltf"
-    gltf.export(filepath)
+    gltf_filepath = "voxel_test.gltf"
+    glb_filepath = "voxel_test.glb"
+    gltf.export(gltf_filepath)
+    gltf.export(glb_filepath)
     # print("About to compress")
-    # compress_gl(filepath)
+    # compress_gl(glb_filepath)
 
 
 def test_prism_mesh():
