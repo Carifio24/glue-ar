@@ -16,11 +16,12 @@ from glue_vispy_viewers.scatter.qt.scatter_viewer import VispyScatterViewer
 
 from glue_ar.common.scatter import scatter_layer_mask
 from glue_ar.common.scatter_export_options import ARIpyvolumeScatterExportOptions, ARVispyScatterExportOptions
+from glue_ar.common.tests.base_viewer_test import BaseViewerTest
 from glue_ar.utils import export_label_for_layer
 
 
 @pytest.fixture
-def scatter_mask_data():
+def scatter_mask_data() -> Data:
     x_values = range(10, 40)
     y_values = range(130, 160)
     z_values = range(-50, -20)
@@ -90,7 +91,7 @@ def test_scatter_mask_bounds(scatter_mask_data, clip, size, color):
         assert mask is None
 
 
-class BaseScatterTest:
+class BaseScatterTest(BaseViewerTest):
 
     # We manually invoke this function in both downstream `test_basic_export` methods
     # which is bad, but is to work around an issue with the CI on Windows.
@@ -120,35 +121,6 @@ class BaseScatterTest:
         self.viewer.state.y_att = self.data1.id['y']
         self.viewer.state.z_att = self.data1.id['z']
         self.state_dictionary = self._basic_state_dictionary(viewer_type)
-
-    def teardown_method(self, method):
-        if getattr(self, "tmpfile", None) is not None:
-            self.tmpfile.close()
-            remove(self.tmpfile.name)
-        if hasattr(self, 'viewer'):
-            if hasattr(self.viewer, "close"):
-                self.viewer.close(warn=False)
-            self.viewer = None
-        if hasattr(self, 'app'):
-            if hasattr(self.app, 'close'):
-                self.app.close()
-        self.app = None
-
-    def _create_application(self, app_type: str) -> Union[GlueApplication, JupyterApplication]:
-        if app_type == "qt":
-            return GlueApplication()
-        elif app_type == "jupyter":
-            return JupyterApplication()
-        else:
-            raise ValueError("Application type should be either qt or jupyter")
-
-    def _viewer_class(self, viewer_type: str) -> Union[Type[VispyScatterViewer], Type[IpyvolumeScatterView]]:
-        if viewer_type == "vispy":
-            return VispyScatterViewer
-        elif viewer_type == "ipyvolume":
-            return IpyvolumeScatterView
-        else:
-            raise ValueError("Viewer type should be either vispy or ipyvolume")
 
     def _basic_state_dictionary(self, viewer_type: str) -> Dict[str, Tuple[str, State]]:
         if viewer_type == "vispy":
