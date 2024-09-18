@@ -253,5 +253,5 @@ try:
                         ("gltf", "glb"), True, add_voxel_layers_gltf)
     ar_layer_export.add(IPVVolumeLayerState, "Voxel", ARVoxelExportOptions,
                         ("usda", "usdc"), True, add_voxel_layers_usd)
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     pass

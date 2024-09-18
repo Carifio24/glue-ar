@@ -16,13 +16,13 @@ from numpy import array, inf, isnan, ndarray
 
 try:
     from glue_jupyter.common.state3d import ViewerState3D
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     ViewerState3D = Vispy3DViewerState
 
 # Backwards compatibility for Python < 3.10
 try:
     from types import NoneType  # noqa
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     NoneType = type(None)
 
 PACKAGE_DIR = dirname(abspath(__file__))
@@ -266,7 +266,7 @@ def is_volume_viewer(viewer: Viewer) -> bool:
         from glue_jupyter.ipyvolume.volume import IpyvolumeVolumeView
         if isinstance(viewer, IpyvolumeVolumeView):
             return True
-    except ImportError:
+    except (ImportError, ModuleNotFoundError):
         pass
 
     return False
@@ -280,7 +280,7 @@ def get_resolution(viewer_state: Viewer3DState) -> int:
         from glue_jupyter.common.state3d import VolumeViewerState
         if isinstance(viewer_state, VolumeViewerState):
             return max((getattr(state, 'max_resolution', 256) for state in viewer_state.layers), default=256)
-    except ImportError:
+    except (ImportError, ModuleNotFoundError):
         pass
 
     return 256

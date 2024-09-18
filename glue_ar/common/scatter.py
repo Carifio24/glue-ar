@@ -11,7 +11,7 @@ from glue_ar.utils import Bounds, NoneType, Viewer3DState, mask_for_bounds
 
 try:
     from glue_jupyter.ipyvolume.scatter import Scatter3DLayerState
-except ImportError:
+except (ModuleNotFoundError, ImportError):
     Scatter3DLayerState = NoneType
 
 ScatterLayerState3D = Union[ScatterLayerState, Scatter3DLayerState]

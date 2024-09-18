@@ -22,7 +22,7 @@ from glue_ar.common.scatter import Scatter3DLayerState, ScatterLayerState3D, \
 
 try:
     from glue_jupyter.common.state3d import ViewerState3D
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     ViewerState3D = NoneType
 
 

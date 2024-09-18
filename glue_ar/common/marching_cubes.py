@@ -172,5 +172,5 @@ try:
                         ("gltf", "glb"), False, add_isosurface_layer_gltf)
     ar_layer_export.add(IPVVolumeLayerState, "Isosurface", ARIsosurfaceExportOptions,
                         ("usda", "usdc"), False, add_isosurface_layer_usd)
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     pass

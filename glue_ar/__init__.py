@@ -10,7 +10,7 @@ except DistributionNotFound:
 def setup_qt():
     try:
         from glue_vispy_viewers.scatter.qt.scatter_viewer import VispyScatterViewer
-    except ImportError:
+    except (ModuleNotFoundError, ImportError):
         from glue_vispy_viewers.scatter.scatter_viewer import VispyScatterViewer
 
     from .qt.export_tool import QtARExportTool  # noqa
@@ -22,7 +22,7 @@ def setup_qt():
 
     try:
         from glue_vispy_viewers.volume.qt.volume_viewer import VispyVolumeViewer
-    except ImportError:
+    except (ModuleNotFoundError, ImportError):
         from glue_vispy_viewers.volume.volume_viewer import VispyVolumeViewer
 
     VispyVolumeViewer.subtools = {
@@ -36,7 +36,7 @@ def setup_qt():
         VispyVolumeViewer.tools = [t for t in VispyVolumeViewer.tools] + ["ar"]
         VispyScatterViewer.subtools["ar"] = ["ar:qr"]
         VispyVolumeViewer.subtools["ar"] = ["ar:qr"]
-    except ImportError:
+    except (ModuleNotFoundError, ImportError):
         pass
 
 
@@ -47,7 +47,7 @@ def setup_jupyter():
         from glue_vispy_viewers.volume.jupyter import JupyterVispyVolumeViewer
         JupyterVispyScatterViewer.tools = [t for t in JupyterVispyScatterViewer.tools] + ["save:ar_jupyter"]
         JupyterVispyVolumeViewer.tools = [t for t in JupyterVispyVolumeViewer.tools] + ["save:ar_jupyter"]
-    except ImportError:
+    except (ModuleNotFoundError, ImportError):
         pass
 
     from glue_jupyter.ipyvolume.scatter import IpyvolumeScatterView
@@ -59,14 +59,14 @@ def setup_jupyter():
 def setup():
     try:
         setup_qt()
-    except ImportError:
+    except (ModuleNotFoundError, ImportError):
         print("Qt setup error")
         print(traceback.format_exc())
         pass
 
     try:
         setup_jupyter()
-    except ImportError:
+    except (ModuleNotFoundError, ImportError):
         print("Jupyter setup error")
         print(traceback.format_exc())
         pass
