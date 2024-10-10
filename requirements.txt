@@ -6,3 +6,4 @@ ngrok
 pillow
 segno
 usd-core
+numpy-stl

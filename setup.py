@@ -750,6 +750,7 @@ setup_args = dict(
         "pillow",
         "PyMCubes",
         "usd-core",
+        "numpy-stl",
     ],
     extras_require={
         "test": [
