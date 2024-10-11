@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from gltflib import Accessor, AccessorType, AlphaMode, Asset, Attributes, Buffer, \
                     BufferTarget, BufferView, ComponentType, GLTFModel, \
                     Material, Mesh, Node, PBRMetallicRoughness, Primitive, PrimitiveMode, Scene

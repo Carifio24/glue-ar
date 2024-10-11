@@ -1,6 +1,6 @@
 from gltflib import AccessorType, BufferTarget, ComponentType, PrimitiveMode
+from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 from glue_vispy_viewers.scatter.layer_state import ScatterLayerState
-from glue_vispy_viewers.volume.viewer_state import Vispy3DViewerState
 from numpy import array, isfinite, ndarray
 from numpy.linalg import norm
 

@@ -1,4 +1,6 @@
-from numpy import array, zeros
+from __future__ import annotations
+
+from numpy import array, concatenate, zeros
 from stl import Mesh
 from typing import Iterable, List
 
@@ -24,7 +26,7 @@ class STLBuilder:
         return self
 
     def build(self) -> Mesh:
-        return Mesh([mesh.data for mesh in self.meshes])
+        return Mesh(concatenate([mesh.data for mesh in self.meshes]))
 
     def build_and_export(self, filepath: str):
         mesh = self.build()

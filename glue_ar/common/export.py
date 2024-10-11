@@ -12,6 +12,7 @@ from glue_vispy_viewers.volume.layer_state import VolumeLayerState
 
 from glue_ar.common.export_options import ar_layer_export
 from glue_ar.common.gltf_builder import GLTFBuilder
+from glue_ar.common.stl_builder import STLBuilder
 from glue_ar.common.usd_builder import USDBuilder
 from glue_ar.utils import PACKAGE_DIR, RESOURCES_DIR, Bounds, BoundsWithResolution, export_label_for_layer
 
@@ -30,6 +31,7 @@ _BUILDERS = {
     "usda": USDBuilder,
     "usdc": USDBuilder,
     "usdz": USDBuilder,
+    "stl": STLBuilder,
 }
 
 
