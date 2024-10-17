@@ -8,6 +8,7 @@ from glue_vispy_viewers.volume.viewer_state import Vispy3DVolumeViewerState
 
 from glue_ar.common.export_options import ar_layer_export
 from glue_ar.common.gltf_builder import GLTFBuilder
+from glue_ar.common.stl_builder import STLBuilder
 from glue_ar.common.usd_builder import USDBuilder
 from glue_ar.common.volume_export_options import ARIsosurfaceExportOptions
 from glue_ar.gltf_utils import add_points_to_bytearray, add_triangles_to_bytearray, \
@@ -166,11 +167,68 @@ def add_isosurface_layer_usd(
         builder.add_mesh(points, triangles, color_components, alpha)
 
 
+@ar_layer_export(VolumeLayerState, "Isosurface", ARIsosurfaceExportOptions, ("stl",))
+def add_isosurface_layer_stl(
+    builder: STLBuilder,
+    viewer_state: Vispy3DVolumeViewerState,
+    layer_state: VolumeLayerState,
+    options: ARIsosurfaceExportOptions,
+    bounds: BoundsWithResolution,
+):
+
+    data = frb_for_layer(viewer_state, layer_state, bounds)
+
+    isomin = isomin_for_layer(viewer_state, layer_state)
+    isomax = isomax_for_layer(viewer_state, layer_state)
+
+    data[~isfinite(data)] = isomin - 10
+
+    isosurface_count = int(options.isosurface_count)
+    levels = linspace(isomin, isomax, isosurface_count)
+    opacity = layer_state.alpha
+    color = layer_color(layer_state)
+    # color_components = tuple(hex_to_components(color))
+
+    world_bounds = (
+        (viewer_state.y_min, viewer_state.y_max),
+        (viewer_state.x_min, viewer_state.x_max),
+        (viewer_state.z_min, viewer_state.z_max),
+    )
+    resolution = getattr(viewer_state, 'resolution', None) or getattr(layer_state, 'max_resolution')
+    x_range = viewer_state.x_max - viewer_state.x_min
+    y_range = viewer_state.y_max - viewer_state.y_min
+    z_range = viewer_state.z_max - viewer_state.z_min
+    x_spacing = x_range / resolution
+    y_spacing = y_range / resolution
+    z_spacing = z_range / resolution
+    sides = (z_spacing, x_spacing, y_spacing)
+    if viewer_state.native_aspect:
+        clip_transforms = clip_linear_transformations(world_bounds, clip_size=1)
+        clip_sides = [s * transform[0] for s, transform in zip(sides, clip_transforms)]
+    else:
+        clip_sides = [2 / resolution for _ in range(3)]
+
+    for i, level in enumerate(levels[1:]):
+        # alpha = (3 * i + isosurface_count) / (4 * isosurface_count) * opacity
+        points, triangles = marching_cubes(data, level)
+        if len(points) == 0:
+            continue
+
+        points = [tuple((-1 + (index + 0.5) * side) for index, side in zip(pt, clip_sides)) for pt in points]
+        points = [[p[1], p[0], p[2]] for p in points]
+        builder.add_mesh(points, triangles)
+
+
 try:
     from glue_jupyter.ipyvolume.volume import VolumeLayerState as IPVVolumeLayerState
     ar_layer_export.add(IPVVolumeLayerState, "Isosurface", ARIsosurfaceExportOptions,
                         ("gltf", "glb"), False, add_isosurface_layer_gltf)
     ar_layer_export.add(IPVVolumeLayerState, "Isosurface", ARIsosurfaceExportOptions,
                         ("usda", "usdc", "usdz"), False, add_isosurface_layer_usd)
+    ar_layer_export.add(IPVVolumeLayerState, "Isosurface", ARIsosurfaceExportOptions,
+                        ("stl",), False, add_isosurface_layer_stl)
 except ImportError:
     pass
+
+
+
