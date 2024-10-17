@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<!--
+	Arcana by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+
+<html>
+  <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-76450307-1"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'UA-76450307-1');
+		</script>
+
+		<title>glue-ar: Augmented Reality Exports From glue</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="favicon.ico">
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  
+  <body>
+    <div id="header">
+      <h1 id="logo">glue-ar</h1>
+    </div>
+
+    <section class="container">
+      <h2>What is it?</h2>
+      <p>glue-ar is a plugin for the <a href="https://glueviz.org">glue</a> visualization software which allows exporting views from glue's 3D viewers to augmented reality (AR)-compatible file formats.</p>
+    </section>
+
+    <section class="container">
+      <h2>Supported file formats</h2>
+      <p>Currently glue-ar supports exporting to two industry-standard 3D file formats:</p>
+      <h4><a href="https://www.khronos.org/Gltf">GL Transmission Format (glTF)</a></h4>
+      <p>glue-ar supports both the JSON/ASCII (.gltf) and binary (.glb) forms of glTF. Additionally, it supports two compression methods for glTF:</p>
+      <ul>
+        <li><a href="https://google.github.io/draco/">Draco</a>, using the <a href="https://github.com/CesiumGS/gltf-pipeline">gltf-pipeline</a> package</li>
+        <li><a href="https://meshoptimizer.org/">Meshopt</a>, using the <a href="https://meshoptimizer.org/gltf/">gltfpack</a> package</li>
+      </ul>
+
+      <h4><a href="https://openusd.org/release/index.html">Universal Scene Description (USD)</a></h4>
+      <p>glue-ar supports all three forms of USD - ASCII-encoded (.usda), binary-encoded (.usdc), and
+      the .usdz package file format</p>
+    </section>
+
+    <section class="container">
+      <h2>Installation</h2>
+      <p>glue-ar is installable via pip:</p>
+  
+      <pre>pip install glue-ar</pre>
+  
+      <p>Installation requires Node.js to be installed on your system, as we currently use JavaScript packages for
+      performing Draco and Meshopt glTF compression. (Having Node installed is all that you need - the npm/JS
+      management relevant for the package is all handled by the package build process!).</p>
+    </section>
+
+    <section class="container">
+      <h2>Where can I use it?</h2>
+      <p>glue-ar can be used with both major frontends for glue: the Qt desktop application, and the glue-jupyter viewers which can be used in Jupyter notebooks.</p>
+    </section>
+
+    <section class="container">
+      <h2>How do I use it?</h2>
+
+      <p>The export tool provided by glue-ar is designed to give a "one-click" experience for creating AR-compatible files from your views. We do allow modifying some of the parameters of the export, but we provide reasonable defaults for all of these options.</p>
+
+      <h4>Qt desktop application</h4>
+      <p>In Qt glue, the glue-ar export tool is exposed in the toolbar as sub-tools of the "save" meta-tool, and can be accessed from its dropdown menu.</p>
+      <img src="/assets/viewer_tool.gif"/>
+
+      <h4>Jupyter</h4>
+
+      <p>The glue Jupyter viewers don't yet support subtools, so in these viewers the glue-ar export tool is exposed at the top level of the toolbar.</p>
+      <img src="assets/viewer_tool_jupyter.png"/>
+
+      <h4>Supported viewers</h4>
+
+      <p>glue-ar supports exporting from the following viewers:</p>
+      <ul>
+        <li>Volume and scatter viewers from the <a href="https://docs.glueviz.org/en/stable/gui_guide/3d_viewers.html">glue-vispy-viewers</a> package (available in both Qt and Jupyter)</li>
+        <li>Volume and scatter viewered powered by ipyvolume from the <a href="https://glue-jupyter.readthedocs.io/en/latest/">glue-jupyter</a> package (Jupyter only)</li>
+      </ul>
+    </section>
+
+    <section class="container">
+      <h2>model-viewer</h2>
+      <p>If glTF is selected as the export file format, glue-ar will also export an HTML file in addition to the glTF. This HTML file provides a display of the exported figure using the <a href="https://modelviewer.dev">model-viewer</a> web component. This model-viewer page provides a THREE.js-powered glTF viewer that, on an AR-capable device (such as an Android or iOS phone) allows viewing the glTF file using the hardware's AR capability. This exported HTML has no additional dependencies and can be served using static file hosting.</p>
+    </section>
+
+    <section class="container">
+      <h2>Examples</h2>
+      <p>Below are links to some examples of files generated using glue-ar:</p>
+      <ul>
+        <li>A <a href="/examples/edenhofer-voxel-350.html">voxelized rendering</a> of a parsec-scale galactic 3D dustmap from <a href="https://arxiv.org/abs/2308.01295">Edenhofer et. al.</a></li>
+        <li>An <a href="/examples/edenhofer-isosurface-256-nocomp.html">isosurface rendering</a> of the same dustmap</li>
+        <li>A <a href="/examples/pertau_voxel.html">3D rendering</a> of the <a href="https://iopscience.iop.org/article/10.3847/2041-8213/ac1f95">Per-Tau Shell</a>, using a voxelized method for dust clouds</a></li>
+        <li><a href="/examples/pertau.html">Another rendering</a> of the Per-Tau shell, using isosurfaces 
+      </ul>
+    </section>
+
+  </body>
+</html>
