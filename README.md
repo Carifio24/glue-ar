@@ -23,10 +23,10 @@ package is all handled by the package build process).
 
 In the Qt desktop application, the AR export tool is exposed in the toolbar as subtools of the "save" meta-tool, and can be accessed from its dropdown menu.
 
-![Qt viewer tool](https://raw.githubusercontent.com/glue-viz/glue-ar/master/docs/assets/viewer_tool.gif)
+![Qt viewer tool](https://raw.githubusercontent.com/glue-viz/glue-ar/master/docs/assets/img/viewer_tool.gif)
 
 In glue-jupyter, the AR export tool is a top-level toolbar tool:
-![Jupyter viewer tool](https://raw.githubusercontent.com/Carifio24/glue-ar/master/docs/assets/viewer_tool_jupyter.png)
+![Jupyter viewer tool](https://raw.githubusercontent.com/Carifio24/glue-ar/master/docs/assets/img/viewer_tool_jupyter.png)
 
 ## Sharing figures
 
