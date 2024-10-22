@@ -29,58 +29,94 @@
       <h1 id="logo">glue-ar</h1>
     </div>
 
-    <section class="container">
+    <nav id="nav">
+      <ul>
+        <li><a href="#what-is-it">What is it?</a></h2></li>
+        <li><a href="#file-formats">Supported file formats</a></h2></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#where-can-i-use">Where can I use it?</a></li>
+        <li><a href="#model-viewer">model-viewer</a></li>
+        <li><a href="#cospaces">CoSpaces</a></li>
+        <li><a href="#examples">Examples</a></li>
+      </ul>
+    </nav>
+
+    <section id="what-is-it" class="nav-item container">
       <h2>What is it?</h2>
       <p>glue-ar is a plugin for the <a href="https://glueviz.org">glue</a> visualization software which allows exporting views from glue's 3D viewers to augmented reality (AR)-compatible file formats.</p>
     </section>
 
-    <section class="container">
+    <hr class="divider">
+
+    <section id="file-formats" class="nav-item container">
       <h2>Supported file formats</h2>
       <p>Currently glue-ar supports exporting to two industry-standard 3D file formats:</p>
-      <h4><a href="https://www.khronos.org/Gltf">GL Transmission Format (glTF)</a></h4>
-      <p>glue-ar supports both the JSON/ASCII (.gltf) and binary (.glb) forms of glTF. Additionally, it supports two compression methods for glTF:</p>
-      <ul>
-        <li><a href="https://google.github.io/draco/">Draco</a>, using the <a href="https://github.com/CesiumGS/gltf-pipeline">gltf-pipeline</a> package</li>
-        <li><a href="https://meshoptimizer.org/">Meshopt</a>, using the <a href="https://meshoptimizer.org/gltf/">gltfpack</a> package</li>
-      </ul>
-
-      <h4><a href="https://openusd.org/release/index.html">Universal Scene Description (USD)</a></h4>
-      <p>glue-ar supports all three forms of USD - ASCII-encoded (.usda), binary-encoded (.usdc), and
-      the .usdz package file format</p>
+      <div class="row 200%">
+        <section class="6u 12u(narrower)">
+          <div class="box highlight">
+            <img height=120 src="assets/img/gltf_logo.svg">
+            <h3><a href="https://www.khronos.org/Gltf">GL Transmission Format (glTF)</a></h3>
+            <p>glue-ar supports both the JSON/ASCII (.gltf) and binary (.glb) forms of glTF. Additionally, it supports two compression methods for glTF:</p>
+            <ul>
+              <li><a href="https://google.github.io/draco/">Draco</a>, using the <a href="https://github.com/CesiumGS/gltf-pipeline">gltf-pipeline</a> package</li>
+              <li><a href="https://meshoptimizer.org/">Meshopt</a>, using the <a href="https://meshoptimizer.org/gltf/">gltfpack</a> package</li>
+            </ul>
+          </div>
+        </section>
+     
+        <section class="6u 12u(narrower)">
+          <div class="box highlight">
+            <img height=120 src="assets/img/usd_logo.png">
+            <h3><a href="https://openusd.org/release/index.html">Universal Scene Description (USD)</a></h3>
+            <p>glue-ar supports all three forms of USD files:</p>
+              <ul>
+                <li>ASCII-encoded (.usda)</li>
+                <li>Binary-encoded (.usdc)</li>
+                <li>Package file format (.usdz)</li>
+              </ul>
+            </div>
+        </section>
+      </div>
     </section>
 
-    <section class="container">
+    <hr class="divider">
+
+    <section id="installation" class="nav-item container">
       <h2>Installation</h2>
       <p>glue-ar is installable via pip:</p>
   
-      <pre>pip install glue-ar</pre>
+      <code>pip install glue-ar</code>
   
       <p>Installation requires Node.js to be installed on your system, as we currently use JavaScript packages for
       performing Draco and Meshopt glTF compression. (Having Node installed is all that you need - the npm/JS
       management relevant for the package is all handled by the package build process!).</p>
     </section>
 
-    <section class="container">
+    <hr class="divider">
+
+    <section id="where-can-i-use" class="nav-item container">
       <h2>Where can I use it?</h2>
       <p>glue-ar can be used with both major frontends for glue: the Qt desktop application, and the glue-jupyter viewers which can be used in Jupyter notebooks.</p>
-    </section>
 
-    <section class="container">
-      <h2>How do I use it?</h2>
+      <div class="row 200%">
+        <section class="6u 12u(narrower)">
+          <div class="box highlight">
+            <h3>Qt desktop application</h3>
+            <p>In Qt glue, the glue-ar export tool is exposed in the toolbar as sub-tools of the "save" meta-tool, and can be accessed from its dropdown menu.</p>
+            <img src="assets/img/viewer_tool.gif" width="80%"/>
+          </div>
+        </section>
 
-      <p>The export tool provided by glue-ar is designed to give a "one-click" experience for creating AR-compatible files from your views. We do allow modifying some of the parameters of the export, but we provide reasonable defaults for all of these options.</p>
+        <section class="6u 12u(narrower)">
+          <div class="box highlight">
+            <h3>Jupyter</h3>
+            <p>The glue Jupyter viewers don't yet support subtools, so in these viewers the glue-ar export tool is exposed at the top level of the toolbar.</p>
+            <img src="assets/img/viewer_tool_jupyter.png" width="100%"/>
+          </div>
+        </section>
+      </div>
 
-      <h4>Qt desktop application</h4>
-      <p>In Qt glue, the glue-ar export tool is exposed in the toolbar as sub-tools of the "save" meta-tool, and can be accessed from its dropdown menu.</p>
-      <img src="assets/viewer_tool.gif"/>
-
-      <h4>Jupyter</h4>
-
-      <p>The glue Jupyter viewers don't yet support subtools, so in these viewers the glue-ar export tool is exposed at the top level of the toolbar.</p>
-      <img src="assets/viewer_tool_jupyter.png"/>
-
-      <h4>Supported viewers</h4>
-
+      <h3>Supported viewers</h3>
       <p>glue-ar supports exporting from the following viewers:</p>
       <ul>
         <li>Volume and scatter viewers from the <a href="https://docs.glueviz.org/en/stable/gui_guide/3d_viewers.html">glue-vispy-viewers</a> package (available in both Qt and Jupyter)</li>
@@ -88,20 +124,141 @@
       </ul>
     </section>
 
-    <section class="container">
+    <hr class="divider">
+
+    <section id="model-viewer" class="nav-item container">
       <h2>model-viewer</h2>
       <p>If glTF is selected as the export file format, glue-ar will also export an HTML file in addition to the glTF. This HTML file provides a display of the exported figure using the <a href="https://modelviewer.dev">model-viewer</a> web component. This model-viewer page provides a THREE.js-powered glTF viewer that, on an AR-capable device (such as an Android or iOS phone) allows viewing the glTF file using the hardware's AR capability. This exported HTML has no additional dependencies and can be served using static file hosting.</p>
     </section>
 
-    <section class="container">
+    <hr class="divider">
+
+    <section id="cospaces" class="nav-item container">
+      <h2>CoSpaces</h2>
+      <p>A popular option for sharing 3D files in augmented reality is <a href="https://www.cospaces.io/">CoSpaces</a>, which allows viewing 3D files on a mobile device via a dedicated app. The CoSpaces app allows viewing figures in AR on a flat surface directly, or using the <a href="https://mergeedu.com/cube">Merge Cube</a> to allow for a more tangible AR experience.</p>
+      <p>CoSpaces supports the glTF and glB formats, so it's possible to output from glue-ar and share via CoSpaces directly. It's our goal to eventually allow automatic CoSpaces upload, but for now sharing your AR figures to CoSpaces requires some manual steps (as well as a CoSpaces account).</p>
+      <p>To create a scene with your newly-exported figure, do the following:</p>
+      <ol>
+        <li>Go to the CoSpaces website and log in to your account</li>
+        <li>On the left side menu, navigate to "CoSpaces"</li>
+        <li>Create the "Create CoSpace" button</li>
+        <li>Select the environment you want:
+          <ul>
+            <li>3D environment > Empty scene, for tabletop AR</li>
+            <li>MERGE Cube > Empty scene, to use the Merge Cube (note that creating a Merge Cube requires a plan addon)</li>
+          </ul>
+        </li>
+        <li>In the bottom left corner, select Upload > 3D models, then press the Upload button to the right</li>
+        <li>Select your 3D mode
+          <ul>
+            <li>Note that CoSpaces currently does not support the extensions needed for Draco or Meshopt compression</li>
+          </ul>
+        </li>
+        <li>Done!</li>
+      </ol>
+    </section>
+
+    <hr class="divider">
+
+    <section id="examples" class="nav-item container">
       <h2>Examples</h2>
-      <p>Below are links to some examples of files generated using glue-ar:</p>
-      <ul>
-        <li>A <a href="examples/edenhofer-voxel-350.html">voxelized rendering</a> of a parsec-scale galactic 3D dustmap from <a href="https://arxiv.org/abs/2308.01295">Edenhofer et. al.</a></li>
-        <li>An <a href="examples/edenhofer-isosurface-256-nocomp.html">isosurface rendering</a> of the same dustmap</li>
-        <li>A <a href="examples/pertau_voxel.html">3D rendering</a> of the <a href="https://iopscience.iop.org/article/10.3847/2041-8213/ac1f95">Per-Tau Shell</a>, using a voxelized method for dust clouds</a></li>
-        <li><a href="examples/pertau.html">Another rendering</a> of the Per-Tau shell, using isosurfaces
-      </ul>
+      <p>Below are some examples of files generated using glue-ar. Scan the QR codes to see the figures in AR on your phone!</p>
+      <!-- 
+        If you need to change these QR codes in the future, they were generated using glue-ar's QR code utility
+        `glue_ar.common.qr.create_qr`
+      -->
+
+      <div class="row flex-row">
+        <section class="9u 12u(narrower)">
+          <div class="box highlight">
+            <img width="75%" class="example-img image" src="assets/img/edenhofer_voxel.png"/>
+            <p>A voxelized rendering of a parsec-scale galactic 3D dustmap from <a href="https://arxiv.org/abs/2308.01295">Edenhofer et. al.</a></p>
+          </div>
+        </section>
+        <section class="3u 12u(narrower)">
+          <div class="box highlight">
+            <a class="image img-link" href="/examples/edenhofer-voxel-350.html">
+              <img
+                class="qr-code"
+                href="/examples/edenhofer-voxel-350.html"
+                src="/examples/edenhofer_voxel_qr_black.png"
+                onmouseover="this.src='/examples/edenhofer_voxel_qr_red.png'"
+                onmouseout="this.src='/examples/edenhofer_voxel_qr_black.png'"
+              />
+            </a>
+          </div>
+        </section>
+      </div>
+
+      <hr>
+
+      <div class="row flex-row">
+        <section class="9u 12u(narrower)">
+          <div class="box highlight">
+            <img width="75%" class="example-img image" src="assets/img/edenhofer_isosurface.png"/>
+            <p>An isosurface rendering of the same dustmap</p>
+          </div>
+        </section>
+        <section class="3u 12u(narrower)">
+          <div class="box highlight">
+            <a class="image img-link" href="/examples/edenhofer-isosurface-256-nocomp.html">
+              <img
+                class="qr-code"
+                src="/examples/edenhofer_isosurface_qr_black.png"
+                onmouseover="this.src='/examples/edenhofer_isosurface_qr_red.png'"
+                onmouseout="this.src='/examples/edenhofer_isosurface_qr_black.png'"
+              />
+            </a>
+          </div>
+        </section>
+      </div>
+
+      <hr>
+
+      <div class="row flex-row">
+        <section class="9u 12u(narrower)">
+          <div class="box highlight">
+            <img width="75%" class="example-img image" src="assets/img/pertau_voxel.png"/>
+            <p>A rendering of the <a href="https://iopscience.iop.org/article/10.3847/2041-8213/ac1f95">Per-Tau Shell</a>, using a voxelized method for dust clouds</a></p>
+          </div>
+        </section>
+        <section class="3u 12u(narrower)">
+          <div class="box highlight">
+            <a class="image img-link" href="/examples/pertau_voxel.html">
+              <img
+                class="qr-code"
+                src="/examples/pertau_voxel_qr_black.png"
+                onmouseover="this.src='/examples/pertau_voxel_qr_red.png'"
+                onmouseout="this.src='/examples/pertau_voxel_qr_black.png'"
+              />
+            </a>
+          </div>
+        </section>
+      </div>
+
+      <hr>
+
+      <div class="row flex-row">
+        <section class="9u 12u(narrower)">
+          <div class="box highlight">
+            <img width="75%" class="example-img image" src="assets/img/pertau_isosurface.png"/>
+            <p>Another rendering of the Per-Tau shell, using isosurfaces for the dust clouds</p>
+          </div>
+        </section>
+        <section class="3u 12u(narrower)">
+          <div class="box highlight">
+            <a class="image img-link" href="/examples/pertau.html">
+              <img
+                class="qr-code"
+                src="/examples/pertau_isosurface_qr_black.png"
+                onmouseover="this.src='/examples/pertau_isosurface_qr_red.png'"
+                onmouseout="this.src='/examples/pertau_isosurface_qr_black.png'"
+              />
+            </a>
+          </div>
+        </section>
+      </div>
+
     </section>
 
   </body>
