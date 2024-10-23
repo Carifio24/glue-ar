@@ -6,6 +6,7 @@ from glue_vispy_viewers.volume.layer_state import VolumeLayerState
 
 from glue_ar.common.export_options import ar_layer_export
 from glue_ar.common.gltf_builder import GLTFBuilder
+from glue_ar.common.stl_builder import STLBuilder
 from glue_ar.common.usd_builder import USDBuilder
 from glue_ar.common.volume_export_options import ARVoxelExportOptions
 from glue_ar.usd_utils import material_for_color
@@ -247,11 +248,83 @@ def add_voxel_layers_usd(builder: USDBuilder,
     return builder
 
 
+@ar_layer_export(VolumeLayerState, "Voxel", ARVoxelExportOptions, ("stl",), multiple=True)
+def add_voxel_layers_stl(builder: STLBuilder,
+                         viewer_state: Vispy3DVolumeViewerState,
+                         layer_states: Iterable[VolumeLayerState],
+                         options: Iterable[ARVoxelExportOptions],
+                         bounds: Optional[BoundsWithResolution] = None):
+
+    resolution = get_resolution(viewer_state)
+    bounds = bounds or xyz_bounds(viewer_state, with_resolution=True)
+    x_range = viewer_state.x_max - viewer_state.x_min
+    y_range = viewer_state.y_max - viewer_state.y_min
+    z_range = viewer_state.z_max - viewer_state.z_min
+    x_spacing = x_range / resolution
+    y_spacing = y_range / resolution
+    z_spacing = z_range / resolution
+    sides = (x_spacing, y_spacing, z_spacing)
+
+    world_bounds = xyz_bounds(viewer_state, with_resolution=False)
+    if viewer_state.native_aspect:
+        clip_transforms = clip_linear_transformations(world_bounds, clip_size=1)
+        clip_sides = [s * transform[0] for s, transform in zip(sides, clip_transforms)]
+        clip_sides = [clip_sides[1], clip_sides[2], clip_sides[0]]
+    else:
+        clip_sides = [2 / resolution for _ in range(3)]
+
+    triangles = rectangular_prism_triangulation()
+
+    opacity_factor = 1
+    occupied_voxels = {}
+    
+    for layer_state, option in zip(layer_states, options):
+        opacity_cutoff = clamp(option.opacity_cutoff, 0, 1)
+        data = frb_for_layer(viewer_state, layer_state, bounds)
+
+        isomin = isomin_for_layer(viewer_state, layer_state)
+        isomax = isomax_for_layer(viewer_state, layer_state)
+
+        data[~isfinite(data)] = isomin - 1
+
+        data = transpose(data, (1, 0, 2))
+
+        isorange = isomax - isomin
+        nonempty_indices = argwhere(data - isomin > 0)
+
+        color = layer_color(layer_state)
+        color_components = hex_to_components(color)
+
+        for indices in nonempty_indices:
+            value = data[tuple(indices)]
+            adjusted_opacity = clamped_opacity(layer_state.alpha * opacity_factor * (value - isomin) / isorange)
+            indices_tpl = tuple(indices)
+            if indices_tpl in occupied_voxels:
+                current_color = occupied_voxels[indices_tpl]
+                adjusted_a_color = color_components[:3] + [adjusted_opacity]
+                new_color = alpha_composite(adjusted_a_color, current_color)
+                occupied_voxels[indices_tpl] = new_color
+            elif adjusted_opacity >= opacity_cutoff:
+                occupied_voxels[indices_tpl] = color_components[:3] + [adjusted_opacity]
+
+    for indices, rgba in occupied_voxels.items():
+        if rgba[-1] < opacity_cutoff:
+            continue
+
+        center = tuple((index + 0.5) * side for index, side in zip(indices, clip_sides))
+        points = rectangular_prism_points(center, clip_sides)
+        builder.add_mesh(points, triangles)
+
+    return builder
+
+
 try:
     from glue_jupyter.ipyvolume.volume import VolumeLayerState as IPVVolumeLayerState
     ar_layer_export.add(IPVVolumeLayerState, "Voxel", ARVoxelExportOptions,
                         ("gltf", "glb"), True, add_voxel_layers_gltf)
     ar_layer_export.add(IPVVolumeLayerState, "Voxel", ARVoxelExportOptions,
                         ("usda", "usdc", "usdz"), True, add_voxel_layers_usd)
+    ar_layer_export.add(IPVVolumeLayerState, "Voxel", ARVoxelExportOptions,
+                        ("stl",), True, add_voxel_layers_stl)
 except ImportError:
     pass
