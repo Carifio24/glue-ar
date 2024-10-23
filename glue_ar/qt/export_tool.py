@@ -21,6 +21,7 @@ _FILETYPE_NAMES = {
     "usdz": "USDZ",
     "usdc": "USDC",
     "usda": "USDA",
+    "stl": "STL",
 }
 
 
@@ -56,8 +57,7 @@ class QtARExportTool(Tool):
                         layer.enabled and layer.state.visible]
         bounds = xyz_bounds(self.viewer.state, with_resolution=is_volume_viewer(self.viewer))
 
-        # self._start_worker(export_viewer,
-        export_viewer(
+        self._start_worker(export_viewer,
                            viewer_state=self.viewer.state,
                            layer_states=layer_states,
                            bounds=bounds,
