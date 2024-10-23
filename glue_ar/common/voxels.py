@@ -277,7 +277,7 @@ def add_voxel_layers_stl(builder: STLBuilder,
 
     opacity_factor = 1
     occupied_voxels = {}
-    
+
     for layer_state, option in zip(layer_states, options):
         opacity_cutoff = clamp(option.opacity_cutoff, 0, 1)
         data = frb_for_layer(viewer_state, layer_state, bounds)

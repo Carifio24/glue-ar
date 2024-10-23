@@ -185,9 +185,6 @@ def add_isosurface_layer_stl(
 
     isosurface_count = int(options.isosurface_count)
     levels = linspace(isomin, isomax, isosurface_count)
-    opacity = layer_state.alpha
-    color = layer_color(layer_state)
-    # color_components = tuple(hex_to_components(color))
 
     world_bounds = (
         (viewer_state.y_min, viewer_state.y_max),
@@ -229,6 +226,3 @@ try:
                         ("stl",), False, add_isosurface_layer_stl)
 except ImportError:
     pass
-
-
-

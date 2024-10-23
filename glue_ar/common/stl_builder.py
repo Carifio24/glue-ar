@@ -20,7 +20,7 @@ class STLBuilder:
         mesh = Mesh(zeros(tris_array.shape[0], dtype=Mesh.dtype))
         for i, f in enumerate(tris_array):
             for j in range(3):
-                mesh.vectors[i][j] = verts_array[f[j],:]
+                mesh.vectors[i][j] = verts_array[f[j], :]
 
         self.meshes.append(mesh)
         return self
