@@ -36,6 +36,7 @@ def add_isosurface_layer_gltf(builder: GLTFBuilder,
     color_components = hex_to_components(color)
     builder.add_material(color_components, opacity=opacity)
     sides = clip_sides(viewer_state, clip_size=1)
+    sides = tuple(sides[i] for i in (2, 1, 0))
     print("Sides:")
     print(sides)
 
@@ -121,6 +122,7 @@ def add_isosurface_layer_usd(
     color = layer_color(layer_state)
     color_components = tuple(hex_to_components(color))
     sides = clip_sides(viewer_state, clip_size=1)
+    sides = tuple(sides[i] for i in (2, 1, 0))
 
     for i, level in enumerate(levels[1:]):
         alpha = (3 * i + isosurface_count) / (4 * isosurface_count) * opacity
@@ -152,6 +154,7 @@ def add_isosurface_layer_stl(
     isosurface_count = int(options.isosurface_count)
     levels = linspace(isomin, isomax, isosurface_count)
     sides = clip_sides(viewer_state, clip_size=1)
+    sides = tuple(sides[i] for i in (2, 1, 0))
 
     for i, level in enumerate(levels[1:]):
         # alpha = (3 * i + isosurface_count) / (4 * isosurface_count) * opacity
