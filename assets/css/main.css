@@ -2378,22 +2378,22 @@
 			}
 
 	#nav {
-        position: sticky;
-        top: 0;
-		cursor: default;
-        margin: 0;
-		padding: 0;
-        width: 100%;
-        display: block;
-        background-color: #EB1C24;
-        margin-bottom: 1.5em;
-        z-index: 10000;
-    }
+    position: sticky;
+    top: 0;
+    cursor: default;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: block;
+    background-color: #EB1C24;
+    margin-bottom: 1.5em;
+    z-index: 10000;
+  }
 
 		#nav > ul {
 			margin: 0;
-            display: flex;
-            justify-content: center;
+      display: flex;
+      justify-content: space-around;
 		}
 
 			#nav > ul > li {
@@ -3185,8 +3185,9 @@
   transition: all 0s;
   box-sizing: border-box;
   min-width: 100px;
-  width: 100%;
-  margin: auto;
+  width: 150px;
+  height: 150px;
+  display: inline;
 }
 
 .qr-code:hover {
@@ -3203,9 +3204,54 @@
   width: 80%;
 }
 
+/* Grid borders adapted from https://geary.co/internal-borders-css-grid/ */
+#examples-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  gap: var(--gap);
+
+  --gap: 2em;
+  --line-offset: calc(var(--gap) / 2);
+  --line-thickness: 1px;
+  --line-color: rgba(71, 71, 71, 0.25);
+  --edge-cutoff: 20px;
+}
+
 .example-img {
-    width: 75%;
-    min-width: 200px;
+  min-height: 150px;
+  max-height: 200px;
+  min-width: 200px;
+  max-width: calc(100% - 170px);
+  object-fit: contain;
+}
+
+.example-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  position: relative;
+}
+
+.example-section::before,
+.example-section::after {
+  content: '';
+  position: absolute;
+  background-color: var(--line-color);
+  z-index: 1;
+}
+
+.example-section::after {
+  inline-size: calc(100% - calc(var(--edge-cutoff) * 2));
+  block-size: var(--line-thickness);
+  inset-inline-start: var(--edge-cutoff);
+  inset-block-start: calc(var(--line-offset) * -1);
+}
+
+.example-section::before {
+  inline-size: var(--line-thickness);
+  block-size: calc(100% - calc(var(--edge-cutoff) * 2));
+  inset-block-start: var(--edge-cutoff);
+  inset-inline-start: calc(var(--line-offset) * -1);
 }
 
 @media screen and (max-width: 840px) {
@@ -3217,8 +3263,17 @@
         display: block;
     }
 
+    .qr-highlight {
+      margin: auto;
+    }
+
     .qr-code {
         width: 75%;
+        height: 75%;
+    }
+
+    #examples-container {
+      grid-template-columns: 1fr;
     }
 }
 

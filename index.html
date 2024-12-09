@@ -120,7 +120,7 @@
       <p>glue-ar supports exporting from the following viewers:</p>
       <ul>
         <li>Volume and scatter viewers from the <a href="https://docs.glueviz.org/en/stable/gui_guide/3d_viewers.html">glue-vispy-viewers</a> package (available in both Qt and Jupyter)</li>
-        <li>Volume and scatter viewered powered by ipyvolume from the <a href="https://glue-jupyter.readthedocs.io/en/latest/">glue-jupyter</a> package (Jupyter only)</li>
+        <li>Volume and scatter viewers powered by ipyvolume from the <a href="https://glue-jupyter.readthedocs.io/en/latest/">glue-jupyter</a> package (Jupyter only)</li>
       </ul>
     </section>
 
@@ -168,18 +168,17 @@
         `glue_ar.common.qr.create_qr`
       -->
 
-      <div class="row flex-row">
-        <section class="9u 12u(narrower)">
+      <div id="examples-container">
+        <section class="example-section">
           <div class="box highlight">
-            <img width="75%" class="example-img image" src="assets/img/edenhofer_voxel.png"/>
+            <img class="example-img image" src="assets/img/edenhofer_voxel.png"/>
             <p>A voxelized rendering of a parsec-scale galactic 3D dustmap from <a href="https://arxiv.org/abs/2308.01295">Edenhofer et. al.</a></p>
           </div>
-        </section>
-        <section class="3u 12u(narrower)">
-          <div class="box highlight">
+          <div class="box highlight qr-highlight">
             <a class="image img-link" href="examples/edenhofer-voxel-350.html">
               <img
                 class="qr-code"
+                width="25%"
                 href="examples/edenhofer-voxel-350.html"
                 src="examples/edenhofer_voxel_qr_black.png"
                 onmouseover="this.src='examples/edenhofer_voxel_qr_red.png'"
@@ -188,65 +187,13 @@
             </a>
           </div>
         </section>
-      </div>
-
-      <hr>
-
-      <div class="row flex-row">
-        <section class="9u 12u(narrower)">
+        
+        <section class="example-section">
           <div class="box highlight">
-            <img width="75%" class="example-img image" src="assets/img/edenhofer_isosurface.png"/>
-            <p>An isosurface rendering of the same dustmap</p>
+            <img class="example-img image" src="assets/img/pertau_isosurface.png"/>
+            <p>A rendering of the <a href="https://iopscience.iop.org/article/10.3847/2041-8213/ac1f95">Per-Tau Shell</a>, using isosurfaces for dust clouds</a></p>
           </div>
-        </section>
-        <section class="3u 12u(narrower)">
-          <div class="box highlight">
-            <a class="image img-link" href="examples/edenhofer-isosurface-256-nocomp.html">
-              <img
-                class="qr-code"
-                src="examples/edenhofer_isosurface_qr_black.png"
-                onmouseover="this.src='examples/edenhofer_isosurface_qr_red.png'"
-                onmouseout="this.src='examples/edenhofer_isosurface_qr_black.png'"
-              />
-            </a>
-          </div>
-        </section>
-      </div>
-
-      <hr>
-
-      <div class="row flex-row">
-        <section class="9u 12u(narrower)">
-          <div class="box highlight">
-            <img width="75%" class="example-img image" src="assets/img/pertau_voxel.png"/>
-            <p>A rendering of the <a href="https://iopscience.iop.org/article/10.3847/2041-8213/ac1f95">Per-Tau Shell</a>, using a voxelized method for dust clouds</a></p>
-          </div>
-        </section>
-        <section class="3u 12u(narrower)">
-          <div class="box highlight">
-            <a class="image img-link" href="examples/pertau_voxel.html">
-              <img
-                class="qr-code"
-                src="examples/pertau_voxel_qr_black.png"
-                onmouseover="this.src='examples/pertau_voxel_qr_red.png'"
-                onmouseout="this.src='examples/pertau_voxel_qr_black.png'"
-              />
-            </a>
-          </div>
-        </section>
-      </div>
-
-      <hr>
-
-      <div class="row flex-row">
-        <section class="9u 12u(narrower)">
-          <div class="box highlight">
-            <img width="75%" class="example-img image" src="assets/img/pertau_isosurface.png"/>
-            <p>Another rendering of the Per-Tau shell, using isosurfaces for the dust clouds</p>
-          </div>
-        </section>
-        <section class="3u 12u(narrower)">
-          <div class="box highlight">
+          <div class="box highlight qr-highlight">
             <a class="image img-link" href="examples/pertau.html">
               <img
                 class="qr-code"
@@ -257,6 +204,41 @@
             </a>
           </div>
         </section>
+
+        <section class="example-section">
+          <div class="box highlight">
+            <img class="example-img image" src="assets/img/gum_nebula.png"/>
+            <p>An isosurface rendering of the Gum Nebula, with scatter points representing the IRAS Vela Shell. The shell is colored by the density of hydrogen. Thanks to Annie Gao for providing this dataset.</p>
+          </div>
+          <div class="box highlight qr-highlight">
+            <a class="image img-link" href="examples/gum-nebula-both-isosurface.html">
+              <img
+                class="qr-code"
+                src="examples/gum_nebula_qr_black.png"
+                onmouseover="this.src='examples/gum_nebula_qr_red.png'"
+                onmouseout="this.src='examples/gum_nebula_qr_black.png'"
+              />
+            </a>
+          </div>
+        </section>
+
+        <section class="example-section">
+          <div class="box highlight">
+            <img class="example-img image" src="assets/img/m83.png"/>
+            <p>A voxelized rendering of a position-position-velocity data cube for the M83 galaxy. Thanks to Eric Koch for providing this dataset.</p>
+          </div>
+          <div class="box highlight qr-highlight">
+            <a class="image img-link" href="examples/m83_voxel_stretch.html">
+              <img
+                class="qr-code"
+                src="examples/m83_qr_black.png"
+                onmouseover="this.src='examples/m83_qr_red.png'"
+                onmouseout="this.src='examples/m83_qr_black.png'"
+              />
+            </a>
+          </div>
+        </section>
+
       </div>
 
     </section>
