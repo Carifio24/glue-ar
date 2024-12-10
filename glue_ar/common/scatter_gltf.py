@@ -264,6 +264,7 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
     uri = f"layer_{unique_id()}.bin"
 
     sizes = sizes_for_scatter_layer(layer_state, bounds, mask)
+    color_materials = {}
     for i, point in enumerate(data):
 
         prev_len = len(barr)
@@ -277,8 +278,12 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
             cval = cmap_vals[i]
             normalized = max(min((cval - layer_state.cmap_vmin) / crange, 1), 0)
             cindex = int(normalized * 255)
-            color = cmap(cindex)
-            builder.add_material(color, layer_state.alpha)
+            material_index = color_materials.get(cindex, None)
+            if material_index is None:
+                color = cmap(cindex)
+                builder.add_material(color, layer_state.alpha)
+                material_index = builder.material_count - 1
+                color_materials[cindex] = material_index
 
         builder.add_buffer_view(
             buffer=buffer,
