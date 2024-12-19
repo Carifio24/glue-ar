@@ -133,6 +133,11 @@ class QtARExportDialog(ARExportDialogBase, QDialog):
         self.ui.combosel_compression.setVisible(gl)
         self.ui.label_compression_message.setVisible(gl)
         self.ui.bool_modelviewer.setVisible(gl)
+        self.ui.label_optimize_for.setVisible(gl)
+        self.ui.optimize_for_row.setVisible(gl)
+        # self.ui.label_filesize.setVisible(gl)
+        # self.ui.label_performance.setVisible(gl)
+        # self.ui.slider_optimize_for.setVisible(gl)
 
     def _on_method_change(self, method_name: str):
         super()._on_method_change(method_name)

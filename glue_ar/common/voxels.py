@@ -29,7 +29,9 @@ def add_voxel_layers_gltf(builder: GLTFBuilder,
                           options: Iterable[ARVoxelExportOptions],
                           bounds: Optional[BoundsWithResolution] = None):
 
-    bounds = bounds or xyz_bounds(viewer_state, with_resolution=True)
+    Vispy3DVolumeViewerState.resolution.set_choices(viewer_state, [2**i for i in range(4, 12)] + [350])
+    viewer_state.resolution = 350
+    bounds = xyz_bounds(viewer_state, with_resolution=True)
     sides = clip_sides(viewer_state, clip_size=1)
     sides = tuple(sides[i] for i in (1, 2, 0))
 
