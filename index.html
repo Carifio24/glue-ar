@@ -16,6 +16,21 @@
 			gtag('config', 'UA-76450307-1');
 		</script>
 
+    <script>
+      window.addEventListener("load", (event) => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const study = queryParams.has("study");
+        if (study) {
+          const examples = document.querySelectorAll(".example-section");
+          examples.forEach(example => {
+            if (!example.classList.contains("study")) {
+              example.style.display = "none";
+            }
+          });
+        }
+      });
+    </script>
+
 		<title>glue-ar: Augmented Reality Exports From glue</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -169,78 +184,391 @@
       -->
 
       <div id="examples-container">
-        <section class="example-section">
-          <div class="box highlight">
-            <img class="example-img image" src="assets/img/edenhofer_voxel.png"/>
-            <p>A voxelized rendering of a parsec-scale galactic 3D dustmap from <a href="https://arxiv.org/abs/2308.01295">Edenhofer et. al.</a></p>
-          </div>
-          <div class="box highlight qr-highlight">
-            <a class="image img-link" href="examples/edenhofer-voxel-350.html">
-              <img
-                class="qr-code"
-                width="25%"
-                href="examples/edenhofer-voxel-350.html"
-                src="examples/edenhofer_voxel_qr_black.png"
-                onmouseover="this.src='examples/edenhofer_voxel_qr_red.png'"
-                onmouseout="this.src='examples/edenhofer_voxel_qr_black.png'"
-              />
-            </a>
-          </div>
-        </section>
-        
-        <section class="example-section">
+        <section class="example-section study">
           <div class="box highlight">
             <img class="example-img image" src="assets/img/pertau_isosurface.png"/>
             <p>A rendering of the <a href="https://iopscience.iop.org/article/10.3847/2041-8213/ac1f95">Per-Tau Shell</a>, using isosurfaces for dust clouds</a></p>
           </div>
           <div class="box highlight qr-highlight">
-            <a class="image img-link" href="examples/pertau.html">
-              <img
-                class="qr-code"
-                src="examples/pertau_isosurface_qr_black.png"
-                onmouseover="this.src='examples/pertau_isosurface_qr_red.png'"
-                onmouseout="this.src='examples/pertau_isosurface_qr_black.png'"
-              />
-            </a>
+            <div class="qr-item">
+              <a class="image img-link" href="examples/pertau-v2-draco.html">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="examples/pertau-v2-draco.html"
+                  src="assets/img/qr/PerTau shell_model-viewer_black.png"
+                  onmouseover="this.src='assets/img/qr/PerTau shell_model-viewer_red.png'"
+                  onmouseout="this.src='assets/img/qr/PerTau shell_model-viewer_black.png'"
+                />
+              </a>
+              <div>model-viewer</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/RBD-AXY">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/RBD-AXY"
+                  src="assets/img/qr/PerTau shell_CoSpaces_tabletop_black.png"
+                  onmouseover="this.src='assets/img/qr/PerTau shell_CoSpaces_tabletop_red.png'"
+                  onmouseout="this.src='assets/img/qr/PerTau shell_CoSpaces_tabletop_black.png'"
+                />
+              </a>
+              <div>CoSpaces - tabletop</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/YUQ-BKD">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/YUQ-BKD"
+                  src="assets/img/qr/PerTau shell_CoSpaces_MERGE_black.png"
+                  onmouseover="this.src='assets/img/qr/PerTau shell_CoSpaces_MERGE_red.png'"
+                  onmouseout="this.src='assets/img/qr/PerTau shell_CoSpaces_MERGE_black.png'"
+                />
+              </a>
+              <div>CoSpaces - MERGE</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="example-section study">
+          <div class="box highlight">
+            <img class="example-img image" src="assets/img/radwave.png"/>
+            <p>A static rendering of the <a href="https://sites.google.com/cfa.harvard.edu/radcliffewave/">Radcliffe Wave</a>, an enormous wavelike structure in the Suns neighborhood.</p>
+          </div>
+          <div class="box highlight qr-highlight">
+            <div class="qr-item">
+              <a class="image img-link" href="examples/radwave_first.html">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="examples/radwave_first.html-v2-draco.html"
+                  src="assets/img/qr/Radcliffe Wave (static)_model-viewer_black.png"
+                  onmouseover="this.src='assets/img/qr/Radcliffe Wave (static)_model-viewer_red.png'"
+                  onmouseout="this.src='assets/img/qr/Radcliffe Wave (static)_model-viewer_black.png'"
+                />
+              </a>
+              <div>model-viewer</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/VFU-PZF">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/VFU-PZF"
+                  src="assets/img/qr/Radcliffe Wave (static)_CoSpaces_tabletop_black.png"
+                  onmouseover="this.src='assets/img/qr/Radcliffe Wave (static)_CoSpaces_tabletop_red.png'"
+                  onmouseout="this.src='assets/img/qr/Radcliffe Wave (static)_CoSpaces_tabletop_black.png'"
+                />
+              </a>
+              <div>CoSpaces - tabletop</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/HTL-WPJ">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/HTL-WPJ"
+                  src="assets/img/qr/Radcliffe Wave (static)_CoSpaces_MERGE_black.png"
+                  onmouseover="this.src='assets/img/qr/Radcliffe Wave (static)_CoSpaces_MERGE_red.png'"
+                  onmouseout="this.src='assets/img/qr/Radcliffe Wave (static)_CoSpaces_MERGE_black.png'"
+                />
+              </a>
+              <div>CoSpaces - MERGE</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="example-section study">
+          <div class="box highlight">
+            <img class="example-img image" src="assets/img/moon.png"/>
+            <p>A 3D model of the Moon.</p>
+          </div>
+          <div class="box highlight qr-highlight">
+            <div class="qr-item">
+              <a class="image img-link" href="examples/Moon.html">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="examples/Moon.html"
+                  src="assets/img/qr/Moon_model-viewer_black.png"
+                  onmouseover="this.src='assets/img/qr/Moon_model-viewer_red.png'"
+                  onmouseout="this.src='assets/img/qr/Moon_model-viewer_black.png'"
+                />
+              </a>
+              <div>model-viewer</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/JUE-LPD">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/JUE-LPD"
+                  src="assets/img/qr/Jupiter_CoSpaces_tabletop_black.png"
+                  onmouseover="this.src='assets/img/qr/Moon_CoSpaces_tabletop_red.png'"
+                  onmouseout="this.src='assets/img/qr/Moon_CoSpaces_tabletop_black.png'"
+                />
+              </a>
+              <div>CoSpaces - tabletop</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/SNV-BWD">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/SNV-BWD"
+                  src="assets/img/qr/Jupiter_CoSpaces_MERGE_black.png"
+                  onmouseover="this.src='assets/img/qr/Moon_CoSpaces_MERGE_red.png'"
+                  onmouseout="this.src='assets/img/qr/Moon_CoSpaces_MERGE_black.png'"
+                />
+              </a>
+              <div>CoSpaces - MERGE</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="example-section study">
+          <div class="box highlight">
+            <img class="example-img image" src="assets/img/jupiter.png"/>
+            <p>A 3D model of Jupiter.</p>
+          </div>
+          <div class="box highlight qr-highlight">
+            <div class="qr-item">
+              <a class="image img-link" href="examples/Jupiter.html">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="examples/Jupiter.html"
+                  src="assets/img/qr/Jupiter_model-viewer_black.png"
+                  onmouseover="this.src='assets/img/qr/Jupiter_model-viewer_red.png'"
+                  onmouseout="this.src='assets/img/qr/Jupiter_model-viewer_black.png'"
+                />
+              </a>
+              <div>model-viewer</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/QSH-BYT">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/QSH-BYT"
+                  src="assets/img/qr/Jupiter_CoSpaces_tabletop_black.png"
+                  onmouseover="this.src='assets/img/qr/Jupiter_CoSpaces_tabletop_red.png'"
+                  onmouseout="this.src='assets/img/qr/Jupiter_CoSpaces_tabletop_black.png'"
+                />
+              </a>
+              <div>CoSpaces - tabletop</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/AHF-YHL">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/AHF-YHL"
+                  src="assets/img/qr/Jupiter_CoSpaces_MERGE_black.png"
+                  onmouseover="this.src='assets/img/qr/Jupiter_CoSpaces_MERGE_red.png'"
+                  onmouseout="this.src='assets/img/qr/Jupiter_CoSpaces_MERGE_black.png'"
+                />
+              </a>
+              <div>CoSpaces - MERGE</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="example-section study">
+          <div class="box highlight">
+            <img class="example-img image" src="assets/img/lb_b_gum.png"/>
+            <p>A 3D model of the <a href="https://ui.adsabs.harvard.edu/abs/2024arXiv241017341O/abstract">Local Bubble's magnetic field</a> together with the Gum Nebula.</p>
+          </div>
+          <div class="box highlight qr-highlight">
+            <div class="qr-item">
+              <a class="image img-link" href="examples/lb_b_gum_vec_draco.html">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="examples/lb_b_gum_vec_draco.html"
+                  src="assets/img/qr/Local Bubble B field (vectors) + Gum Nebula_model-viewer_black.png"
+                  onmouseover="this.src='assets/img/qr/Local Bubble B field (vectors) + Gum Nebula_model-viewer_red.png'"
+                  onmouseout="this.src='assets/img/qr/Local Bubble B field (vectors) + Gum Nebula_model-viewer_black.png'"
+                />
+              </a>
+              <div>model-viewer</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/ZZK-AJS">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/ZZK-AJS"
+                  src="assets/img/qr/Jupiter_CoSpaces_tabletop_black.png"
+                  onmouseover="this.src='assets/img/qr/Local Bubble B field (vectors) + Gum Nebula_CoSpaces_tabletop_red.png'"
+                  onmouseout="this.src='assets/img/qr/Local Bubble B field (vectors) + Gum Nebula_CoSpaces_tabletop_black.png'"
+                />
+              </a>
+              <div>CoSpaces - tabletop</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/HSB-EYR">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/HSB-EYR"
+                  src="assets/img/qr/Jupiter_CoSpaces_MERGE_black.png"
+                  onmouseover="this.src='assets/img/qr/Local Bubble B field (vectors) + Gum Nebula_CoSpaces_MERGE_red.png'"
+                  onmouseout="this.src='assets/img/qr/Local Bubble B field (vectors) + Gum Nebula_CoSpaces_MERGE_black.png'"
+                />
+              </a>
+              <div>CoSpaces - MERGE</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="example-section study">
+          <div class="box highlight">
+            <img class="example-img image" src="assets/img/m83.png"/>
+            <p>A voxelized rendering of a position-position-velocity data cube for the <a href="https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-83/">M83</a> galaxy. Thanks to Eric Koch for providing this dataset.</p>
+          </div>
+          <div class="box highlight qr-highlight">
+            <div class="qr-item">
+              <a class="image img-link" href="examples/m83_voxel_stretch.html">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="examples/m83_voxel_stretch.html"
+                  src="assets/img/qr/M83_model-viewer_black.png"
+                  onmouseover="this.src='assets/img/qr/M83_model-viewer_red.png'"
+                  onmouseout="this.src='assets/img/qr/M83_model-viewer_black.png'"
+                />
+              </a>
+              <div>model-viewer</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/JRS-JCK">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/JRS-JCK"
+                  src="assets/img/qr/M83_CoSpaces_tabletop_black.png"
+                  onmouseover="this.src='assets/img/qr/M83_CoSpaces_tabletop_red.png'"
+                  onmouseout="this.src='assets/img/qr/M83_CoSpaces_tabletop_black.png'"
+                />
+              </a>
+              <div>CoSpaces - tabletop</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/JSZ-RAR">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/JSZ-RAR"
+                  src="assets/img/qr/M83_CoSpaces_MERGE_black.png"
+                  onmouseover="this.src='assets/img/qr/M83_CoSpaces_MERGE_red.png'"
+                  onmouseout="this.src='assets/img/qr/M83_CoSpaces_MERGE_black.png'"
+                />
+              </a>
+              <div>CoSpaces - MERGE</div>
+            </div>
           </div>
         </section>
 
         <section class="example-section">
           <div class="box highlight">
             <img class="example-img image" src="assets/img/gum_nebula.png"/>
-            <p>An isosurface rendering of the Gum Nebula, with scatter points representing the IRAS Vela Shell. The shell is colored by the density of hydrogen. Thanks to Annie Gao for providing this dataset.</p>
+            <p>A rendering of the Gum Nebula, with points representing the IRAS Vela Shell. The shell is colored by hydrogen density. Thanks to Annie Gao for providing this dataset.</p>
           </div>
           <div class="box highlight qr-highlight">
-            <a class="image img-link" href="examples/gum-nebula-both-isosurface.html">
-              <img
-                class="qr-code"
-                src="examples/gum_nebula_qr_black.png"
-                onmouseover="this.src='examples/gum_nebula_qr_red.png'"
-                onmouseout="this.src='examples/gum_nebula_qr_black.png'"
-              />
-            </a>
+            <div class="qr-item">
+              <a class="image img-link" href="examples/gum-nebula-both-isosurface.html">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="examples/gum-nebula-both-isosurface.html"
+                  src="assets/img/qr/Gum Nebula + IRAS Vela Shell_model-viewer_black.png"
+                  onmouseover="this.src='assets/img/qr/Gum Nebula + IRAS Vela Shell_model-viewer_red.png'"
+                  onmouseout="this.src='assets/img/qr/Gum Nebula + IRAS Vela Shell_model-viewer_black.png'"
+                />
+              </a>
+              <div>model-viewer</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/ZKP-FGK">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/ZKP-FGK"
+                  src="assets/img/qr/Gum Nebula + IRAS Vela Shell_CoSpaces_tabletop_black.png"
+                  onmouseover="this.src='assets/img/qr/Gum Nebula + IRAS Vela Shell_CoSpaces_tabletop_red.png'"
+                  onmouseout="this.src='assets/img/qr/Gum Nebula + IRAS Vela Shell_CoSpaces_tabletop_black.png'"
+                />
+              </a>
+              <div>CoSpaces - tabletop</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/GCR-YCC">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/GCR-YCC"
+                  src="assets/img/qr/Gum Nebula + IRAS Vela Shell_CoSpaces_MERGE_black.png"
+                  onmouseover="this.src='assets/img/qr/Gum Nebula + IRAS Vela Shell_CoSpaces_MERGE_red.png'"
+                  onmouseout="this.src='assets/img/qr/Gum Nebula + IRAS Vela Shell_CoSpaces_MERGE_black.png'"
+                />
+              </a>
+              <div>CoSpaces - MERGE</div>
+            </div>
           </div>
         </section>
 
-        <section class="example-section">
+       <section class="example-section">
           <div class="box highlight">
-            <img class="example-img image" src="assets/img/m83.png"/>
-            <p>A voxelized rendering of a position-position-velocity data cube for the M83 galaxy. Thanks to Eric Koch for providing this dataset.</p>
+            <img class="example-img image" src="assets/img/radwave.gif"/>
+            <p>An animated rendering of the <a href="https://sites.google.com/cfa.harvard.edu/radcliffewave/">Radcliffe Wave</a>, showing the motion of the wave over time.</p>
           </div>
           <div class="box highlight qr-highlight">
-            <a class="image img-link" href="examples/m83_voxel_stretch.html">
-              <img
-                class="qr-code"
-                src="examples/m83_qr_black.png"
-                onmouseover="this.src='examples/m83_qr_red.png'"
-                onmouseout="this.src='examples/m83_qr_black.png'"
-              />
-            </a>
+            <div class="qr-item">
+              <a class="image img-link" href="https://carifio24.github.io/radwave-ar/radwave.html">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://carifio24.github.io/radwave-ar/radwave.html"
+                  src="assets/img/qr/Radcliffe Wave (animated)_model-viewer_black.png"
+                  onmouseover="this.src='assets/img/qr/Radcliffe Wave (animated)_model-viewer_red.png'"
+                  onmouseout="this.src='assets/img/qr/Radcliffe Wave (animated)_model-viewer_black.png'"
+                />
+              </a>
+              <div>model-viewer</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/VFU-PZF">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/VFU-PZF"
+                  src="assets/img/qr/Radcliffe Wave (animated)_CoSpaces_tabletop_black.png"
+                  onmouseover="this.src='assets/img/qr/Radcliffe Wave (animated)_CoSpaces_tabletop_red.png'"
+                  onmouseout="this.src='assets/img/qr/Radcliffe Wave (animated)_CoSpaces_tabletop_black.png'"
+                />
+              </a>
+              <div>CoSpaces - tabletop</div>
+            </div>
+            <div class="qr-item">
+              <a class="image img-link" href="https://edu.cospaces.io/HTL-WPJ">
+                <img
+                  class="qr-code"
+                  width="25%"
+                  href="https://edu.cospaces.io/HTL-WPJ"
+                  src="assets/img/qr/Radcliffe Wave (animated)_CoSpaces_MERGE_black.png"
+                  onmouseover="this.src='assets/img/qr/Radcliffe Wave (animated)_CoSpaces_MERGE_red.png'"
+                  onmouseout="this.src='assets/img/qr/Radcliffe Wave (animated)_CoSpaces_MERGE_black.png'"
+                />
+              </a>
+              <div>CoSpaces - MERGE</div>
+            </div>
           </div>
         </section>
 
       </div>
-
     </section>
 
   </body>
