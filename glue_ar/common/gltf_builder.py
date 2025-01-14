@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from collections import defaultdict
+
 from gltflib import Accessor, AccessorType, AlphaMode, Asset, Attributes, Buffer, \
                     BufferTarget, BufferView, ComponentType, GLTFModel, \
                     Material, Mesh, Node, PBRMetallicRoughness, Primitive, PrimitiveMode, Scene
 from gltflib.gltf import GLTF
 from gltflib.gltf_resource import FileResource
-from typing import Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 from glue_ar.registries import builder
 
@@ -15,6 +17,7 @@ class GLTFBuilder:
 
     def __init__(self):
         self.materials: List[Material] = []
+        self.primitives: Dict[int, List[Primitive]] = defaultdict(list)
         self.meshes: List[Mesh] = []
         self.buffers: List[Buffer] = []
         self.buffer_views: List[BufferView] = []
@@ -41,24 +44,29 @@ class GLTFBuilder:
         )
         return self
 
-    def add_mesh(self,
-                 position_accessor: int,
-                 indices_accessor: Optional[int] = None,
-                 material: Optional[int] = None,
-                 mode: PrimitiveMode = PrimitiveMode.TRIANGLES) -> GLTFBuilder:
-
+    def add_primitive_to_mesh(self,
+                              mesh: int,
+                              position_accessor: int,
+                              indices_accessor: Optional[int] = None,
+                              material: Optional[int] = None,
+                              mode: PrimitiveMode = PrimitiveMode.TRIANGLES) -> GLTFBuilder:
         primitive_kwargs = {
-                "attributes": Attributes(POSITION=position_accessor),
-                "mode": mode
+            "attributes": Attributes(POSITION=position_accessor),
+            "mode": mode,
         }
         if indices_accessor is not None:
             primitive_kwargs["indices"] = indices_accessor
         if material is not None:
             primitive_kwargs["material"] = material
+        self.primitives[mesh].append(
+            Primitive(**primitive_kwargs)
+        )
+
+        return self
+
+    def add_mesh(self, mesh: int) -> GLTFBuilder:
         self.meshes.append(
-            Mesh(primitives=[
-                Primitive(**primitive_kwargs)]
-            )
+            Mesh(primitives=self.primitives[mesh])
         )
         return self
 
