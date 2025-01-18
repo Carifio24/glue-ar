@@ -1,7 +1,9 @@
 <html>
   <head>
     <script type="module" src="$url"></script>
+    <style>
       $style
+    </style>
   </head>
   <body>
     <model-viewer
@@ -16,7 +18,14 @@
       <button slot="ar-button" class="ar-button">
         $button_text
       </button>
+      <div class="controls" id="layer-controls">
+        <h3>Toggle Layers</h3>
+        $buttons
+      </div>
     </model-viewer>
+    <script>
+      $script
+    </script>
   </body>
 </html>
 
