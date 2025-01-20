@@ -15,7 +15,7 @@ from glue_ar.common.shapes import cone_triangles, cone_points, cylinder_points, 
                                   normalize, rectangular_prism_triangulation, sphere_triangles
 from glue_ar.gltf_utils import SHORT_MAX, add_points_to_bytearray, add_triangles_to_bytearray, \
                                index_mins, index_maxes
-from glue_ar.utils import Viewer3DState, iterable_has_nan, hex_to_components, \
+from glue_ar.utils import Viewer3DState, export_label_for_layer, iterable_has_nan, hex_to_components, \
                           layer_color, offset_triangles, unique_id, xyz_bounds, xyz_for_layer, Bounds
 from glue_ar.common.gltf_builder import GLTFBuilder
 from glue_ar.common.scatter import Scatter3DLayerState, ScatterLayerState3D, \
@@ -33,6 +33,7 @@ except ImportError:
 def add_vectors_gltf(builder: GLTFBuilder,
                      viewer_state: Viewer3DState,
                      layer_state: ScatterLayerState3D,
+                     layer_id: str,
                      data: ndarray,
                      bounds: Bounds,
                      tip_height: float,
@@ -151,6 +152,7 @@ def add_vectors_gltf(builder: GLTFBuilder,
         )
 
         builder.add_mesh(
+            layer_id=layer_id,
             position_accessor=builder.accessor_count-1,
             indices_accessor=triangles_accessor,
             material=material_index,
@@ -164,6 +166,7 @@ def add_vectors_gltf(builder: GLTFBuilder,
 def add_error_bars_gltf(builder: GLTFBuilder,
                         viewer_state: Viewer3DState,
                         layer_state: ScatterLayerState3D,
+                        layer_id: str,
                         axis: Literal["x", "y", "z"],
                         data: ndarray,
                         bounds: Bounds,
@@ -222,6 +225,7 @@ def add_error_bars_gltf(builder: GLTFBuilder,
             maxes=pt_maxes,
         )
         builder.add_mesh(
+            layer_id=layer_id,
             position_accessor=builder.accessor_count-1,
             material=material,
             mode=PrimitiveMode.LINES,
@@ -278,6 +282,8 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
     # Note that this will work for colormapping as well
     if points_per_mesh is None:
         points_per_mesh = n_points
+
+    layer_id = export_label_for_layer(layer_state)
 
     if fixed_color:
         points = []
@@ -379,6 +385,7 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
                 triangles_accessor = builder.accessor_count - 1
 
             builder.add_mesh(
+                layer_id=layer_id,
                 position_accessor=points_accessor,
                 indices_accessor=triangles_accessor,
                 material=builder.material_count-1,
@@ -499,6 +506,7 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
 
                 material = color_materials[cindex]
                 builder.add_mesh(
+                    layer_id=layer_id,
                     position_accessor=points_accessor,
                     indices_accessor=triangles_accessor,
                     material=material,
@@ -515,6 +523,7 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
                 builder=builder,
                 viewer_state=viewer_state,
                 layer_state=layer_state,
+                layer_id=layer_id,
                 axis=axis,
                 data=data,
                 bounds=bounds,
@@ -530,6 +539,7 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
             builder=builder,
             viewer_state=viewer_state,
             layer_state=layer_state,
+                layer_id=layer_id,
             data=data,
             bounds=bounds,
             tip_height=tip_height,

@@ -24,7 +24,7 @@ class TestVispyScatterUSD(BaseScatterTest):
         self.tmpfile.close()
         layer_states = [layer.state for layer in layers_to_export(self.viewer)]
         export_viewer(self.viewer.state,
-                      layer_states=layer_states,
+                      states=layer_states,
                       bounds=bounds,
                       state_dictionary=self.state_dictionary,
                       filepath=self.tmpfile.name,
