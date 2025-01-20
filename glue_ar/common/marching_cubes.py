@@ -13,8 +13,8 @@ from glue_ar.common.usd_builder import USDBuilder
 from glue_ar.common.volume_export_options import ARIsosurfaceExportOptions
 from glue_ar.gltf_utils import add_points_to_bytearray, add_triangles_to_bytearray, index_export_option, \
                                index_mins, index_maxes
-from glue_ar.utils import BoundsWithResolution, clip_sides, frb_for_layer, hex_to_components, isomin_for_layer, \
-                          isomax_for_layer, layer_color
+from glue_ar.utils import BoundsWithResolution, clip_sides, export_label_for_layer, frb_for_layer, hex_to_components, isomin_for_layer, \
+                          isomax_for_layer, layer_color, unique_id
 
 
 @ar_layer_export(VolumeLayerState, "Isosurface", ARIsosurfaceExportOptions, ("gltf", "glb"))
@@ -27,6 +27,8 @@ def add_isosurface_layer_gltf(builder: GLTFBuilder,
 
     if len(data) == 0:
         return
+
+    layer_id = export_label_for_layer(layer_state)
 
     isomin = isomin_for_layer(viewer_state, layer_state)
     isomax = isomax_for_layer(viewer_state, layer_state)
@@ -97,6 +99,7 @@ def add_isosurface_layer_gltf(builder: GLTFBuilder,
             maxes=tri_maxes,
         )
         builder.add_mesh(
+            layer_id=layer_id,
             position_accessor=builder.accessor_count-2,
             indices_accessor=builder.accessor_count-1,
             material=builder.material_count-1,

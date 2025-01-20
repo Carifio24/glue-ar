@@ -1,11 +1,12 @@
 from __future__ import annotations
+from collections import defaultdict
 
 from gltflib import Accessor, AccessorType, AlphaMode, Asset, Attributes, Buffer, \
                     BufferTarget, BufferView, ComponentType, GLTFModel, \
                     Material, Mesh, Node, PBRMetallicRoughness, Primitive, PrimitiveMode, Scene
 from gltflib.gltf import GLTF
 from gltflib.gltf_resource import FileResource
-from typing import Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 from glue_ar.registries import builder
 
@@ -16,6 +17,7 @@ class GLTFBuilder:
     def __init__(self):
         self.materials: List[Material] = []
         self.meshes: List[Mesh] = []
+        self.meshes_by_layer: Dict[str, List[int]] = defaultdict(list)
         self.buffers: List[Buffer] = []
         self.buffer_views: List[BufferView] = []
         self.accessors: List[Accessor] = []
@@ -42,6 +44,7 @@ class GLTFBuilder:
         return self
 
     def add_mesh(self,
+                 layer_id: Union[str, Iterable[str]],
                  position_accessor: int,
                  indices_accessor: Optional[int] = None,
                  material: Optional[int] = None,
@@ -55,11 +58,17 @@ class GLTFBuilder:
             primitive_kwargs["indices"] = indices_accessor
         if material is not None:
             primitive_kwargs["material"] = material
+        mesh_index = self.mesh_count
         self.meshes.append(
             Mesh(primitives=[
                 Primitive(**primitive_kwargs)]
             )
         )
+        if isinstance(layer_id, str):
+            self.meshes_by_layer[layer_id].append(mesh_index)
+        else:
+            for id in layer_id:
+                self.meshes_by_layer[id].append(mesh_index)
         return self
 
     def add_buffer(self,

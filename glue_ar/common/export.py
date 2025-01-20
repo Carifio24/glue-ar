@@ -6,10 +6,10 @@ from glue.core.state_objects import State
 from glue.config import settings
 from glue.viewers.common.state import LayerState
 from glue_vispy_viewers.scatter.viewer_state import Vispy3DViewerState
-from glue_vispy_viewers.volume.layer_state import VolumeLayerState
 
 
 from glue_ar.common.export_options import ar_layer_export
+from glue_ar.common.gltf_builder import GLTFBuilder
 from glue_ar.registries import builder as builder_registry, compressor as compressor_registry
 from glue_ar.utils import PACKAGE_DIR, RESOURCES_DIR, Bounds, BoundsWithResolution, export_label_for_layer
 
@@ -24,6 +24,7 @@ def export_viewer(viewer_state: Vispy3DViewerState,
                   bounds: Union[Bounds, BoundsWithResolution],
                   state_dictionary: Dict[str, Tuple[str, State]],
                   filepath: str,
+                  allow_multiple: Optional[bool] = True,
                   compression: Optional[str] = "None",
                   model_viewer: bool = False):
 
@@ -43,7 +44,7 @@ def export_viewer(viewer_state: Vispy3DViewerState,
         export_states = export_groups[key]
         layer_state_cls, name = key
         spec = ar_layer_export.export_spec(layer_state_cls, name, ext)
-        if spec.multiple:
+        if spec.multiple and allow_multiple:
             spec.export_method(builder, viewer_state, states, export_states, bounds)
         else:
             for layer_state, export_state in zip(states, export_states):
@@ -56,7 +57,7 @@ def export_viewer(viewer_state: Vispy3DViewerState,
             compress_gl(filepath, method=compression)
         if model_viewer:
             mv_path = f"{base}{extsep}html"
-            export_modelviewer(mv_path, filepath, layer_states, viewer_state.title)
+            export_modelviewer(mv_path, filepath, builder, viewer_state.title)
 
 
 def compress_gl(filepath: str, method: str = "draco"):
@@ -68,8 +69,9 @@ def compress_gl(filepath: str, method: str = "draco"):
 
 def export_modelviewer(output_path: str,
                        gltf_path: str,
-                       layer_states: List[LayerState],
-                       alt_text: str):
+                       builder: GLTFBuilder,
+                       alt_text: str,
+                       layer_controls: bool = True):
     mv_url = "https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"
     with open(join(RESOURCES_DIR, "model-viewer.html")) as f:
         html_template = f.read()
@@ -79,8 +81,13 @@ def export_modelviewer(output_path: str,
     with open(join(RESOURCES_DIR, "model-viewer.js")) as h:
         javascript = h.read()
 
-    buttons = [f"<button data-layer=\"{index}\">{state.layer.label}</button>" for index, state in enumerate(layer_states)]
-    buttons = "\n".join(buttons)
+    if layer_controls:
+        controls = ["<h3>Toggle Layers</h3>"]
+        controls.extend([f"<button data-layer=\"{index}\" data-meshes=\"{','.join(str(idx) for idx in materials)}\">{layer_id}</button>"
+                         for index, (layer_id, materials) in enumerate(builder.meshes_by_layer.items())])
+        controls = "\n".join(controls)
+    else:
+        controls = ""
 
     _, gltf_name = split(gltf_path)
 
@@ -90,7 +97,7 @@ def export_modelviewer(output_path: str,
         "alt_text": alt_text,
         "style": css,
         "button_text": "View in AR",
-        "buttons": buttons,
+        "controls": controls,
         "script": javascript,
     }
     html = Template(html_template).substitute(substitutions)

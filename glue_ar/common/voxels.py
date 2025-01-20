@@ -1,7 +1,7 @@
 from collections import defaultdict
 from glue_vispy_viewers.volume.viewer_state import Vispy3DVolumeViewerState
 from numpy import isfinite, argwhere, transpose
-from typing import Iterable, Optional
+from typing import Iterable, List, Optional, Union
 
 from glue_vispy_viewers.volume.layer_state import VolumeLayerState
 
@@ -12,7 +12,7 @@ from glue_ar.common.usd_builder import USDBuilder
 from glue_ar.common.volume_export_options import ARVoxelExportOptions
 from glue_ar.usd_utils import material_for_color, sanitize_path
 from glue_ar.utils import BoundsWithResolution, alpha_composite, binned_opacity, clamp, \
-                          clip_sides, frb_for_layer, hex_to_components, isomin_for_layer, \
+                          clip_sides, export_label_for_layer, frb_for_layer, hex_to_components, isomin_for_layer, \
                           isomax_for_layer, layer_color, offset_triangles, unique_id, xyz_bounds
 
 from glue_ar.gltf_utils import add_points_to_bytearray, add_triangles_to_bytearray, index_export_option, \
@@ -25,10 +25,18 @@ from gltflib import AccessorType, BufferTarget, ComponentType
 @ar_layer_export(VolumeLayerState, "Voxel", ARVoxelExportOptions, ("gltf", "glb"), multiple=True)
 def add_voxel_layers_gltf(builder: GLTFBuilder,
                           viewer_state: Vispy3DVolumeViewerState,
-                          layer_states: Iterable[VolumeLayerState],
+                          layer_states: Union[List[VolumeLayerState], VolumeLayerState],
                           options: Iterable[ARVoxelExportOptions],
                           bounds: Optional[BoundsWithResolution] = None,
                           voxels_per_mesh: Optional[int] = None):
+
+    if isinstance(layer_states, VolumeLayerState):
+        layer_states = [layer_states]
+
+    if len(layer_states) == 1:
+        layer_id = export_label_for_layer(layer_states[0])
+    else:
+        layer_id = "Voxel Layers"
 
     bounds = bounds or xyz_bounds(viewer_state, with_resolution=True)
     sides = clip_sides(viewer_state, clip_size=1)
@@ -205,6 +213,7 @@ def add_voxel_layers_gltf(builder: GLTFBuilder,
                 triangles_accessor = builder.accessor_count - 1
 
             builder.add_mesh(
+                layer_id=layer_id,
                 position_accessor=points_accessor,
                 indices_accessor=triangles_accessor,
                 material=materials_map[rgba],
