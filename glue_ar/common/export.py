@@ -1,4 +1,5 @@
 from collections import defaultdict
+from math import floor
 from os.path import extsep, join, split, splitext
 from string import Template
 from typing import Dict, Optional
@@ -11,7 +12,7 @@ from glue_vispy_viewers.scatter.viewer_state import Vispy3DViewerState
 from glue_ar.common.export_options import ar_layer_export
 from glue_ar.common.gltf_builder import GLTFBuilder
 from glue_ar.registries import builder as builder_registry, compressor as compressor_registry
-from glue_ar.utils import PACKAGE_DIR, RESOURCES_DIR, Bounds, BoundsWithResolution, export_label_for_layer
+from glue_ar.utils import PACKAGE_DIR, RESOURCES_DIR, Bounds, BoundsWithResolution, export_label_for_layer, rgb_to_hex
 
 from typing import List, Tuple, Union
 
@@ -83,8 +84,12 @@ def export_modelviewer(output_path: str,
 
     if layer_controls:
         controls = ["<h3>Toggle Layers</h3>"]
-        controls.extend([f"<button data-layer=\"{index}\" data-meshes=\"{','.join(str(idx) for idx in materials)}\">{layer_id}</button>"
-                         for index, (layer_id, materials) in enumerate(builder.meshes_by_layer.items())])
+        for index, (layer_id, mesh_indices) in enumerate(builder.meshes_by_layer.items()):
+            meshes_string = ",".join(str(idx) for idx in mesh_indices)
+            color_mesh_index = mesh_indices[floor(len(mesh_indices) / 2)]
+            material_index = builder.meshes[color_mesh_index].primitives[0].material or 0
+            color = rgb_to_hex(*builder.materials[material_index].pbrMetallicRoughness.baseColorFactor[:3])
+            controls.append(f"<button data-color=\"{color}\" data-layer=\"{index}\" data-meshes=\"{meshes_string}\">{layer_id}</button>")
         controls = "\n".join(controls)
     else:
         controls = ""

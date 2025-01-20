@@ -1,11 +1,3 @@
-function componentToHex(c) {
-  return Math.round(c * 256).toString(16).padStart(2, "0");
-}
-
-function rgbToHex(r, g, b) {
-  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-}
-
 function updateButtonStyle(button, on, color) {
   button.style.color = on ? color : "black";
   button.style.border = on ? `1px solid ${color}` : "none";
@@ -40,11 +32,7 @@ const modelViewer = document.querySelector("model-viewer");
 modelViewer.addEventListener("load", (_event) => {
   const layerControls = document.querySelector("#layer-controls");
   const buttons = [...layerControls.querySelectorAll("button")];
-  buttons.forEach((button) => {
-    const meshIndices = parseCommaSeparatedIndices(button.dataset.meshes);
-    const color = getMesh(modelViewer, meshIndices[0]).material.color;
-    updateButtonStyle(button, true, [color.r, color.g, color.b]);
-  });
+  buttons.forEach((button) => updateButtonStyle(button, true, button.dataset.color));
 
   const layersOn = buttons.map(_ => true);
   layerControls.addEventListener("click", (event) => {
@@ -53,8 +41,8 @@ modelViewer.addEventListener("load", (_event) => {
     const meshIndices = parseCommaSeparatedIndices(meshesString);
     const layerIndex = Number(dataset.layer);
 
-    const wasOn = layersOn[layerIndex];
+    layersOn[layerIndex] = !layersOn[layerIndex];
     meshIndices.forEach(meshIndex => toggleMeshVisibility(modelViewer, meshIndex));
-    updateButtonStyle(buttons[layerIndex], !wasOn, hexColors[meshIndices[0]]);
+    updateButtonStyle(buttons[layerIndex], layersOn[layerIndex], dataset.color);
   });
 });
