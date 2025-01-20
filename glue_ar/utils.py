@@ -251,6 +251,14 @@ def hex_to_components(color: str) -> List[int]:
     return [int(color[idx:idx+2], 16) for idx in range(1, len(color), 2)]
 
 
+def color_component_to_hex(c: float) -> str:
+    return hex(round(c * 256))[2:].zfill(2)
+
+
+def rgb_to_hex(r: float, g: float, b: float) -> str:
+    return "#" + "".join(color_component_to_hex(c) for c in (r, g, b))
+
+
 def unique_id() -> str:
     return uuid4().hex
 
