@@ -52,6 +52,10 @@
             v-model="modelviewer"
             label="Export model-viewer HTML"
           />
+          <v-checkox
+            v-if="show_modelviewer"
+            :disabled="compression_selected === 0 && modelviewer"
+            label="Include model-viewer layer controls"
         </v-row>
         <v-row>
           <v-spacer></v-spacer>

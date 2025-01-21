@@ -28,6 +28,8 @@ class ARExportDialogBase:
         self.state.add_callback('layer', self._on_layer_change)
         self.state.add_callback('filetype', self._on_filetype_change)
         self.state.add_callback('method', self._on_method_change)
+        self.state.add_callback('compression', self._on_compression_change)
+        self.state.add_callback('modelviewer', self._on_modelviewer_change)
 
     def _initialize_dictionaries(self, layers: List[LayerArtist]):
         for layer in layers:
@@ -72,6 +74,12 @@ class ARExportDialogBase:
             self._update_layer_ui(state)
 
     def _on_filetype_change(self, filetype: str):
+        pass
+
+    def _on_compression_change(self, compression: str):
+        pass
+
+    def _on_modelviewer_change(self, use_modelviewer: bool):
         pass
 
     def _on_method_change(self, method_name: str):

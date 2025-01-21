@@ -96,6 +96,9 @@ class JupyterARExportDialog(ARExportDialogBase, VuetifyTemplate):
         self.show_compression = gl
         self.show_modelviewer = gl
 
+    def _on_compression_change(self, compression: str):
+        pass
+
     def vue_cancel_dialog(self, *args):
         self.state_dictionary = {}
         self.dialog_open = False
