@@ -27,7 +27,8 @@ def export_viewer(viewer_state: Vispy3DViewerState,
                   filepath: str,
                   allow_multiple: Optional[bool] = True,
                   compression: Optional[str] = "None",
-                  model_viewer: bool = False):
+                  model_viewer: bool = False,
+                  layer_controls: bool = True):
 
     base, ext = splitext(filepath)
     ext = ext[1:]
@@ -54,11 +55,17 @@ def export_viewer(viewer_state: Vispy3DViewerState,
     builder.build_and_export(filepath)
 
     if ext in ("gltf", "glb"):
+        # We can only add layer controls if we aren't using compression
+        layer_controls = layer_controls and compression == "None"
         if (compression is not None) and (compression != "None"):
             compress_gl(filepath, method=compression)
         if model_viewer:
             mv_path = f"{base}{extsep}html"
-            export_modelviewer(mv_path, filepath, builder, viewer_state.title)
+            export_modelviewer(output_path=mv_path,
+                               gltf_path=filepath,
+                               builder=builder,
+                               alt_text=viewer_state.title,
+                               layer_controls=layer_controls)
 
 
 def compress_gl(filepath: str, method: str = "draco"):
