@@ -3213,7 +3213,7 @@
 }
 
 #examples {
-  margin: 0 0 2em 0;
+  margin-bottom: 2em;
 }
 
 /* Grid borders adapted from https://geary.co/internal-borders-css-grid/ */
