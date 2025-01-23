@@ -2064,7 +2064,8 @@
 
 		.image.featured {
 			display: block;
-			margin: 0 0 2em 0;
+			/* margin: 0 auto 2em auto; */
+      margin: 0 0 2em 0;
 		}
 
 			.image.featured img {
@@ -2356,7 +2357,6 @@
 
 	#header {
 		text-align: center;
-		background-color: #fff;
 		/*background-image: url("images/bg02.png"), url("images/bg02.png"), url("images/bg01.png");*/
 		background-position: top left,					top left,					top left;
 		background-size: 100% 6em,					100% 6em,					auto;
@@ -2375,7 +2375,15 @@
 			#header h1 a {
 				letter-spacing: -0.025em;
 				border: 0;
+        -webkit-user-select: none; /* Safari */        
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+/Edge */
+        user-select: none; /* Standard */
 			}
+
+      #header h1 a:hover {
+        color: inherit;
+      }
 
 	#nav {
     position: sticky;
@@ -3202,6 +3210,10 @@
 
 .divider {
   width: 80%;
+}
+
+#examples {
+  margin: 0 0 2em 0;
 }
 
 /* Grid borders adapted from https://geary.co/internal-borders-css-grid/ */

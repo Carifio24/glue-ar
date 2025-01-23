@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<!--
+	Arcana by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+
+<html>
+  <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-76450307-1"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'UA-76450307-1');
+		</script>
+
+		<title>glue-ar: Export Options</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="favicon.ico">
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+
+  <body>
+    <div id="header">
+      <h1 id="logo"><a href="/">glue-ar</a></h1>
+    </div>
+
+    <section class="container">
+      <h2>Export Options</h2>
+      <p>Once you've got a view that you want to export in one of the viewers mentioned above, the next step is to export your 3D figure. The package attempts to make the export process as simple as possible, but we also provide you with some options to optimize the output file for the environment in which you want to share it.</p>
+      <p>For this sections, we show the export dialog as it appears in Qt glue, but the export dialog has almost the same UI when accessed from Jupyter.</p>
+
+      <h3>Layer options</h3>
+      <img class="image featured" src="assets/img/layer_select.png" width="400" width="154"/>
+      <p>Most of the export options can be set on a layer-by-layer basis, with the exception of the filetype and compression options described below. You can switch layers using the layer selection box.</p>
+
+      <h3>Layer options - scatter</h3>
+      <img class="image featured" src="assets/img/scatter_layer_options.png" width="400" height="217"/>
+      <h5>Points per mesh</h5>
+      <p>This option controls how many points (rendered as spherical meshes) are put into each mesh in the export glTF file. Setting this value lower will result in a smaller file due to how the glTF is created, but may negatively impact performance as it will requires more draw calls inside the renderer.</p>
+      <h5>Resolution</h5>
+      <p>For vispy scatter layers, each point is rendered as a spherical mesh. In the output model, we allow setting the resolution of these spherical meshes. Increasing this value leads to a higher-resolution mesh (closer to a sphere), but will increase the filesize, as the spherical geometries now have more points and triangles.</p>
+      <p>For ipyvolume scatter layers, where each layer uses a glyph with a definite geometry, we simply replicate the geometry of the relevant glyph.</p>
+      
+      <h3>Layer options - volume</h3>
+      <img class="image featured" src="assets/img/volume_export_methods.png" width="400" height="64"/>
+      <h4>Export Methods</h4>
+      <p>For volume layers, two different export methods are supported:</p>
+      <ul>
+        <li>Isosurface - this represents the layer as a (configurable) number of isosurfaces</li>
+        <li>Voxel - this represents the layer as a 3D grid (with the resolution matching that of the viewer), attempting to replicate the volume viewer's display</li>
+      </ul>
+
+      <h4>Isosurface options<h4>
+      <img class="image featured" src="assets/img/isosurface_layer_options.png" width="400" height="93"/>
+      <h5>Isosurface count</h5>
+      <p>For isosurface exports, the number of isosurfaces is a configurable parameter, with a value between 1 and 50. These isosurfaces are level curves of the selected primary attribute, evenly spaced between the currently set limits of the layer.</p>
+
+      <h4>Voxel options</h4>
+      <img class="image featured" src="assets/img/voxel_layer_options.png" width="400" height="184"/>
+      <h5>Opacity cutoff</h5>
+      <p>Similar to the volume viewer itself, the intensity at each voxel is computed based on the value of the primary attribute within that voxel. This cutoff sets the minimum opacity for which voxels will be added to the output model; any voxels with a lower opacity will be omitted.</p>
+      <h5>Opacity resolution</h5>
+      <p>This option allows configuring the resolution of the opacity in the output model - the opacity of each voxel will be rounded to the nearest integer multiple of this value. Increasing this value allows for a smaller filesize (as fewer materials are required for the export), but lowers the degree to which each voxel accurately represents the value of the primary attribute at that point.</p>
+
+      <h3>File options</h3>
+      <img class="image featured" src="assets/img/file_options.png" width="400" height="229"/>
+      <h5>File format</h5>
+      <p>As mentioned above, glue-ar supports both glTF/glB and USD formats (USDZ, USDC, and USDA). We also offer partial support for STL files, with the main restriction being that we don't (yet) support exporting materials via MTL. A dropdown in the export dialog allows choosing your desired output file.</p>
+      <h5>Compression</h5>
+      <p>For glTF/glB files, glue-ar supports export using both the Draco and Meshopt compression methods. This is achieved using the <a href="https://gltf-transform.dev/">glTF Transform</a> JavaScript package, which is automatically installed along with glue-ar. Draco and Meshopt can provide significant filesize reduction, making it easier for users to download models served over the internet. However, not all platforms support glTF compression extensions, and so we allow exporting uncompressed models as well. A dropdown in the dialog window allows choosing a compression option if applicable.</p>
+      <h5>model-viewer</h5>
+      <p>For glTF/glB files, glue-ar can also export an HTML file in addition to the glTF. This HTML file provides a display of the exported figure using the <a href="https://modelviewer.dev">model-viewer</a> web component. This model-viewer page provides a THREE.js-powered glTF viewer that, on an AR-capable device (such as an Android or iOS phone) allows viewing the glTF file using the hardware's AR capability. This exported HTML has no additional dependencies and can be served using static file hosting. A checkbox in the dialog allows specifying whether or not to export model-viewer HTML with the model. Note that the exported HTML expects the 3D model to live in the same subdirectory on the file server.</p>
+    </section>
+
+
+  </body>
+</html>
