@@ -51,6 +51,14 @@ def add_triangles_to_bytearray(arr: bytearray,
             arr.extend(struct.pack(format, index))
 
 
+def add_indices_to_bytearray(arr: bytearray,
+                             indices: Iterable[int],
+                             short: bool = False):
+    format = "H" if short else "I"
+    for index in indices:
+        arr.extend(struct.pack(format, index))
+
+
 T = TypeVar("T", bound=Union[int, float])
 
 
