@@ -57,7 +57,7 @@ def rectangular_prism_triangulation(start_index: int = 0) -> List[Tuple[int, int
 
 
 def rectangular_prism_strip(start_index: int = 0) -> Iterable[int]:
-    return tuple(start_index + idx for idx in (3, 2, 6, 7, 4, 2, 0, 3, 1, 6, 5, 4, 1, 0))
+    return tuple(start_index + idx for idx in (0, 4, 2, 6, 7, 4, 5, 0, 1, 2, 3, 7, 1, 5))
 
 
 def sphere_mesh_index(row: int, column: int, theta_resolution: int, phi_resolution: int) -> int:
