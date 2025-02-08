@@ -31,7 +31,7 @@
 
     <section class="container">
       <h2>Export Options</h2>
-      <p>Once you've got a view that you want to export in one of the viewers mentioned above, the next step is to export your 3D figure. The package attempts to make the export process as simple as possible, but we also provide you with some options to optimize the output file for the environment in which you want to share it.</p>
+      <p>Once you've got a view that you want to export in one of the viewers mentioned on the previous page, the next step is to export your 3D figure. The package attempts to make the export process as simple as possible, but we also provide you with some options to optimize the output file for the environment in which you want to share it.</p>
       <p>For this sections, we show the export dialog as it appears in Qt glue, but the export dialog has almost the same UI when accessed from Jupyter.</p>
 
       <h3>Layer options</h3>
@@ -41,7 +41,7 @@
       <h3>Layer options - scatter</h3>
       <img class="image featured" src="assets/img/scatter_layer_options.png" width="400" height="217"/>
       <h5>Points per mesh</h5>
-      <p>This option controls how many points (rendered as spherical meshes) are put into each mesh in the export glTF file. Setting this value lower will result in a smaller file due to how the glTF is created, but may negatively impact performance as it will requires more draw calls inside the renderer.</p>
+      <p>This option controls how many points (rendered as spherical meshes) are put into each mesh in the export glTF file. Setting this value lower will result in a smaller file due to how the glTF is created, but may negatively impact performance as it will require more draw calls inside the renderer.</p>
       <h5>Resolution</h5>
       <p>For vispy scatter layers, each point is rendered as a spherical mesh. In the output model, we allow setting the resolution of these spherical meshes. Increasing this value leads to a higher-resolution mesh (closer to a sphere), but will increase the filesize, as the spherical geometries now have more points and triangles.</p>
       <p>For ipyvolume scatter layers, where each layer uses a glyph with a definite geometry, we simply replicate the geometry of the relevant glyph.</p>
