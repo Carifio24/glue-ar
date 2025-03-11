@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from gltflib import Accessor, AccessorType, AlphaMode, Asset, Attributes, Buffer, \
-                    BufferTarget, BufferView, ComponentType, GLTFModel, \
-                    Material, Mesh, Node, PBRMetallicRoughness, Primitive, PrimitiveMode, Scene
+from gltflib import Accessor, AccessorType, AlphaMode, Animation, AnimationSampler, Asset, Attributes, Buffer, \
+                    BufferTarget, BufferView, Channel, ComponentType, GLTFModel, \
+                    Material, Mesh, Node, PBRMetallicRoughness, Primitive, PrimitiveMode, Scene, \
+                    Target
 from gltflib.gltf import GLTF
 from gltflib.gltf_resource import FileResource
-from typing import Iterable, List, Optional, Union
+from typing import Iterable, List, Literal, Optional, Union
 
 from glue_ar.registries import builder
 
@@ -20,6 +21,9 @@ class GLTFBuilder:
         self.buffer_views: List[BufferView] = []
         self.accessors: List[Accessor] = []
         self.file_resources: List[FileResource] = []
+        self.channels: List[Channel] = []
+        self.samplers: List[AnimationSampler] = []
+        self.animations: List[Animation] = []
 
     def add_material(self,
                      color: Iterable[float],
@@ -118,6 +122,23 @@ class GLTFBuilder:
         )
         return self
 
+    def add_animation(self,
+                      name: str,
+                      node: int,
+                      time_accessor: int,
+                      diffs_accessor: int,
+                      path: Literal["translation", "rotation", "scale"],
+                      interpolation: Literal["STEP", "LINEAR", "CUBICSPLINE"] = "LINEAR") -> GLTFBuilder:
+
+        target = Target(node=node, path=path)
+        sampler = AnimationSampler(input=time_accessor, interpolation=interpolation, output=diffs_accessor)
+        self.samplers.append(sampler)
+        channel = Channel(target=target, sampler=self.sampler_count-1)
+        self.channels.append(channel)
+        animation = Animation(name=name, channels=[channel], samplers=[sampler])
+        self.animations.append(animation)
+        return self
+
     @property
     def material_count(self) -> int:
         return len(self.materials)
@@ -138,6 +159,18 @@ class GLTFBuilder:
     def accessor_count(self) -> int:
         return len(self.accessors)
 
+    @property
+    def channel_count(self) -> int:
+        return len(self.channels)
+
+    @property
+    def sampler_count(self) -> int:
+        return len(self.samplers)
+
+    @property
+    def animation_count(self) -> int:
+        return len(self.animations)
+
     def build_model(self) -> GLTFModel:
         nodes = [Node(mesh=i) for i in range(len(self.meshes))]
         node_indices = list(range(len(nodes)))
@@ -151,6 +184,8 @@ class GLTFBuilder:
             bufferViews=self.buffer_views,
             accessors=self.accessors,
             materials=self.materials or None,
+            samplers=self.samplers or None,
+            animations=self.animations or None,
         )
 
     def build(self) -> GLTF:
