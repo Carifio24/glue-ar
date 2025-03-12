@@ -69,6 +69,11 @@ def add_triangles_to_bytearray(arr: bytearray,
             arr.extend(struct.pack(export_option.format, index))
 
 
+def add_values_to_bytearray(arr: bytearray, values: Iterable[Union[int, float]], format="f"):
+    for value in values:
+        arr.extend(struct.pack(format, value))
+
+
 T = TypeVar("T", bound=Union[int, float])
 
 
