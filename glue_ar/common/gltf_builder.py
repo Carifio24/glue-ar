@@ -132,10 +132,16 @@ class GLTFBuilder:
         sampler = AnimationSampler(input=time_accessor, interpolation=interpolation, output=diffs_accessor)
         
         anim = self.animations[animation]
-        sampler_index = len(anim.samplers)
+        if anim.samplers is None:
+            anim.samplers = [sampler]
+        else:
+            anim.samplers.append(sampler)
+        sampler_index = len(anim.samplers) - 1
         channel = Channel(target=target, sampler=sampler_index)
-        anim.samplers.append(sampler)
-        anim.channels.append(channel)
+        if anim.channels is None:
+            anim.channels = [channel]
+        else:
+            anim.channels.append(channel)
         
         return self
 
