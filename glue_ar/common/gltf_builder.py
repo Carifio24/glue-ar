@@ -124,12 +124,12 @@ class GLTFBuilder:
                          animation: int,
                          node: int,
                          time_accessor: int,
-                         diffs_accessor: int,
+                         values_accessor: int,
                          path: Literal["translation", "rotation", "scale"],
                          interpolation: Literal["STEP", "LINEAR", "CUBICSPLINE"] = "LINEAR") -> GLTFBuilder:
 
         target = Target(node=node, path=path)
-        sampler = AnimationSampler(input=time_accessor, interpolation=interpolation, output=diffs_accessor)
+        sampler = AnimationSampler(input=time_accessor, interpolation=interpolation, output=values_accessor)
         
         anim = self.animations[animation]
         if anim.samplers is None:
