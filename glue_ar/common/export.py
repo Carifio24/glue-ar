@@ -9,6 +9,7 @@ from glue_vispy_viewers.scatter.viewer_state import Vispy3DViewerState
 from glue_vispy_viewers.volume.layer_state import VolumeLayerState
 
 
+from glue_ar.compression import *
 from glue_ar.common.export_options import ar_layer_export
 from glue_ar.registries import builder as builder_registry, compressor as compressor_registry
 from glue_ar.utils import PACKAGE_DIR, RESOURCES_DIR, Bounds, BoundsWithResolution, export_label_for_layer

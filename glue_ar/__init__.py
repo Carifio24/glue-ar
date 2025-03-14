@@ -6,12 +6,10 @@ except DistributionNotFound:
     pass
 
 
-def setup_common():
-    from .common.gltf_builder import GLTFBuilder  # noqa: F401
-    from .common.usd_builder import USDBuilder  # noqa: F401
-    from .common.stl_builder import STLBuilder  # noqa: F401
-
-    from .compression import compress_draco, compress_meshoptimizer  # noqa: F401
+from .common.gltf_builder import GLTFBuilder  # noqa: F401
+from .common.usd_builder import USDBuilder  # noqa: F401
+from .common.stl_builder import STLBuilder  # noqa: F401
+from .compression import compress_draco, compress_meshoptimizer  # noqa: F401
 
 
 def setup_qt():
@@ -64,8 +62,6 @@ def setup_jupyter():
 
 
 def setup():
-
-    setup_common()
 
     try:
         setup_qt()
