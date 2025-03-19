@@ -22,6 +22,7 @@ class GLTFBuilder:
         self.accessors: List[Accessor] = []
         self.file_resources: List[FileResource] = []
         self.animations: List[Animation] = []
+        self.extensions: Dict[str, Dict[str, bool]] = {}
 
     def add_material(self,
                      color: Iterable[float],
@@ -156,6 +157,15 @@ class GLTFBuilder:
         
         return self
 
+    def add_extension(self,
+                      extension: str,
+                      required: bool = True,
+                      used: bool = True) -> GLTFBuilder:
+        self.extensions[extension] = {
+            "required": required,
+            "used": used,
+        }
+
     @property
     def material_count(self) -> int:
         return len(self.materials)
@@ -194,6 +204,9 @@ class GLTFBuilder:
             accessors=self.accessors,
             materials=self.materials or None,
             animations=self.animations or None,
+            extensions=list(self.extensions.keys()),
+            extensionsRequired=list(ext for ext, params in self.extensions.items() if params.get("required", True)),
+            extensionsUsed=list(ext for ext, params in self.extensions.items() if params.get("used", True)),
         )
 
     def build(self) -> GLTF:
