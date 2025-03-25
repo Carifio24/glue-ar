@@ -133,7 +133,7 @@ class GLTFBuilder:
 
         target = Target(node=node, path=path)
         sampler = AnimationSampler(input=time_accessor, interpolation=interpolation, output=values_accessor)
-        
+
         anim = self.animations[animation]
         if anim.samplers is None:
             anim.samplers = [sampler]
@@ -145,9 +145,8 @@ class GLTFBuilder:
             anim.channels = [channel]
         else:
             anim.channels.append(channel)
-        
-        return self
 
+        return self
 
     def add_animation(self,
                       name: str,
@@ -156,7 +155,7 @@ class GLTFBuilder:
 
         animation = Animation(name=name, channels=channels, samplers=samplers)
         self.animations.append(animation)
-        
+
         return self
 
     def add_extension(self,
