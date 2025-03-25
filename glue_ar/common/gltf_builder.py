@@ -80,12 +80,14 @@ class GLTFBuilder:
                         buffer: int,
                         byte_length: int,
                         byte_offset: int,
+                        byte_stride: Optional[int] = None,
                         target: Optional[BufferTarget] = None) -> GLTFBuilder:
         self.buffer_views.append(
             BufferView(
                 buffer=buffer,
                 byteLength=byte_length,
                 byteOffset=byte_offset,
+                byteStride=byte_stride,
                 target=target.value if target else None,
             )
         )
