@@ -61,9 +61,11 @@
       <p>For isosurface exports, the number of isosurfaces is a configurable parameter, with a value between 1 and 50. These isosurfaces are level curves of the selected primary attribute, evenly spaced between the currently set limits of the layer.</p>
 
       <h4>Voxel options</h4>
-      <img class="image featured" src="assets/img/voxel_layer_options.png" width="400" height="184"/>
+      <img class="image featured" src="assets/img/voxel_layer_options.png" width="400" height="276"/>
       <h5>Opacity cutoff</h5>
       <p>Similar to the volume viewer itself, the intensity at each voxel is computed based on the value of the primary attribute within that voxel. This cutoff sets the minimum opacity for which voxels will be added to the output model; any voxels with a lower opacity will be omitted.</p>
+      <h5>Opacity factor</h5>
+      <p>This is an overall factor by which to adjust the opacities of the output voxels. This value is useful is you find the the default glue-ar exports are making your model too translucent or too opaque.</p>
       <h5>Opacity resolution</h5>
       <p>This option allows configuring the resolution of the opacity in the output model - the opacity of each voxel will be rounded to the nearest integer multiple of this value. Increasing this value allows for a smaller filesize (as fewer materials are required for the export), but lowers the degree to which each voxel accurately represents the value of the primary attribute at that point.</p>
 
