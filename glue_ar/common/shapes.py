@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from itertools import product
 import math
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 from numpy import cross, pi
 
@@ -19,6 +20,26 @@ __all__ = [
 ]
 
 
+@dataclass
+class RectangularPrismSideOptions:
+    x_low: bool = True
+    x_high: bool = True
+    y_low: bool = True
+    y_high: bool = True
+    z_low: bool = True
+    z_high: bool = True
+
+    def __bool__(self) -> bool:
+        return self.x_low or self.x_high or \
+               self.y_low or self.y_high or \
+               self.z_low or self.z_high
+
+    def value(self):
+        string = "".join("1" if b else "0" for b in
+                         (self.x_low, self.x_high, self.y_low, self.y_high, self.z_low, self.z_high))
+        return int(string, 2)
+
+
 def rectangular_prism_points(center: Iterable[float], sides: Iterable[float]) -> List[Tuple[float, float, float]]:
     side_diffs = [(-s / 2, s / 2) for s in sides]
     diffs = product(*side_diffs)
@@ -26,32 +47,33 @@ def rectangular_prism_points(center: Iterable[float], sides: Iterable[float]) ->
     return points
 
 
-def rectangular_prism_triangulation(start_index: int = 0) -> List[Tuple[int, int, int]]:
-    triangles = [
-        # x = low
-        (start_index + 5, start_index + 1, start_index + 7),
-        (start_index + 7, start_index + 1, start_index + 3),
+def rectangular_prism_triangulation(start_index: int = 0, options: Optional[RectangularPrismSideOptions] = None) -> List[Tuple[int, int, int]]:
+    options = options or RectangularPrismSideOptions()
+    triangles = []
 
-        # x = high
-        (start_index + 6, start_index + 2, start_index + 4),
-        (start_index + 0, start_index + 4, start_index + 2),
+    if options and options.x_low:
+        triangles.append((start_index + 5, start_index + 1, start_index + 7))
+        triangles.append((start_index + 7, start_index + 1, start_index + 3))
 
-        # y = high
-        (start_index + 0, start_index + 2, start_index + 1),
-        (start_index + 1, start_index + 2, start_index + 3),
+    if options and options.x_high:
+        triangles.append((start_index + 6, start_index + 2, start_index + 4))
+        triangles.append((start_index + 0, start_index + 4, start_index + 2))
 
-        # y = low
-        (start_index + 4, start_index + 7, start_index + 6),
-        (start_index + 7, start_index + 4, start_index + 5),
+    if options and options.y_high:
+        triangles.append((start_index + 0, start_index + 2, start_index + 1))
+        triangles.append((start_index + 1, start_index + 2, start_index + 3))
 
-        # z = low
-        (start_index + 7, start_index + 3, start_index + 2),
-        (start_index + 7, start_index + 2, start_index + 6),
+    if options and options.y_low:
+        triangles.append((start_index + 4, start_index + 7, start_index + 6))
+        triangles.append((start_index + 7, start_index + 4, start_index + 5))
 
-        # z = high
-        (start_index + 5, start_index + 4, start_index + 1),
-        (start_index + 4, start_index + 0, start_index + 1),
-    ]
+    if options and options.z_low:
+        triangles.append((start_index + 7, start_index + 3, start_index + 2))
+        triangles.append((start_index + 7, start_index + 2, start_index + 6))
+
+    if options and options.z_high:
+        triangles.append((start_index + 5, start_index + 4, start_index + 1))
+        triangles.append((start_index + 4, start_index + 0, start_index + 1))
 
     return triangles
 
