@@ -28,7 +28,7 @@ def add_voxel_layers_gltf(builder: GLTFBuilder,
                           layer_states: Iterable[VolumeLayerState],
                           options: Iterable[ARVoxelExportOptions],
                           bounds: Optional[BoundsWithResolution] = None,
-                          voxels_per_mesh: Optional[int] = None):
+                          voxels_per_mesh: Optional[int] = 1):
 
     bounds = bounds or xyz_bounds(viewer_state, with_resolution=True)
     sides = clip_sides(viewer_state, clip_size=1)
