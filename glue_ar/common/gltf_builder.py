@@ -205,7 +205,6 @@ class GLTFBuilder:
             accessors=self.accessors,
             materials=self.materials or None,
             animations=self.animations or None,
-            extensions=list(self.extensions.keys()),
             extensionsRequired=list(ext for ext, params in self.extensions.items() if params.get("required", True)),
             extensionsUsed=list(ext for ext, params in self.extensions.items() if params.get("used", True)),
         )
