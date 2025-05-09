@@ -1,7 +1,7 @@
 from enum import Enum
 import operator
 import struct
-from typing import Callable, Iterable, List, Literal, Optional, Type, TypeVar, Union
+from typing import Callable, Iterable, List, Literal, Optional, Tuple, Type, TypeVar, Union
 
 from gltflib import AccessorType, ComponentType, Material, PBRMetallicRoughness
 from gltflib.gltf import GLTF
@@ -19,20 +19,37 @@ __all__ = [
 
 
 class GLTFIndexExportOption(Enum):
-    Byte = ("B", ComponentType.UNSIGNED_BYTE, 2**8-1)
-    Short = ("H", ComponentType.UNSIGNED_SHORT, 2**16-1)
-    Int = ("I", ComponentType.UNSIGNED_INT, 2**32-1)
+    Byte = ("B", ComponentType.UNSIGNED_BYTE, 1)
+    Short = ("H", ComponentType.UNSIGNED_SHORT, 2)
+    Int = ("I", ComponentType.UNSIGNED_INT, 4)
 
-    def __init__(self, format: Literal["B", "H", "I"], component_type: ComponentType, max: int):
+    def __init__(self, format: Literal["B", "H", "I"], component_type: ComponentType, byte_size: int):
         self.format = format
         self.component_type = component_type
-        self.max = max
+        self.byte_size = byte_size
+
+    @property
+    def max(self) -> int:
+        return (2 ** (8 * self.byte_size)) - 1
 
 
 GLTF_COMPRESSION_EXTENSIONS = {
     "draco": "KHR_draco_mesh_compression",
     "meshoptimizer": "EXT_meshopt_compression",
 }
+
+def byte_size_format(component_type: ComponentType | int) -> Tuple[int, str]:
+    match component_type:
+        case ComponentType.UNSIGNED_BYTE:
+            return 1, "B"
+        case ComponentType.UNSIGNED_SHORT:
+            return 2, "H"
+        case ComponentType.UNSIGNED_INT:
+            return 4, "I"
+        case ComponentType.FLOAT:
+            return 4, "f"
+        case _:
+            return 0, ""
 
 
 def index_export_option(max_index: int) -> GLTFIndexExportOption:
@@ -119,12 +136,49 @@ def get_buffer_data(gltf: GLTF, buffer_index: int) -> bytes:
         return resource.data
 
 
+def get_indices(gltf: GLTF, mesh_index: int, primitive_index: int = 0):
+    model = gltf.model
+    if (meshes := model.meshes) is None or \
+       (accessors := model.accessors) is None or \
+       (buffer_views := model.bufferViews) is None:
+        return []
+
+    mesh = meshes[mesh_index]
+    primitive = mesh.primitives[primitive_index]
+    triangles_accessor_index = primitive.indices
+
+    accessor = accessors[triangles_accessor_index or 0]
+    buffer_view_index = accessor.bufferView
+    buffer_view = buffer_views[buffer_view_index or 0]
+    buffer_index = buffer_view.buffer
+    buffer_data = get_buffer_data(gltf, buffer_index)
+
+    byte_offset = (buffer_view.byteOffset or 0) + (accessor.byteOffset or 0)
+    count = accessor.count
+    component_type = accessor.componentType
+    data_type = accessor.type
+
+    if data_type != AccessorType.SCALAR.value:
+        raise ValueError(f"Indices should be SCALAR! Got {data_type}")
+
+    component_size, format = byte_size_format(component_type)
+
+    index_data = []
+    unpack_format = f"<{format}"
+    for i in range(count):
+        offset = byte_offset + i * component_size
+        index_bytes = buffer_data[offset:offset + component_size]
+        index = struct.unpack(unpack_format, index_bytes)
+        index_data.append(index)
+    return index_data
+
+
 def get_vertex_positions(gltf: GLTF, mesh_index: int, primitive_index: int = 0):
     model = gltf.model
     if (meshes := model.meshes) is None or \
        (accessors := model.accessors) is None or \
        (buffer_views := model.bufferViews) is None:
-        return
+        return []
 
     mesh = meshes[mesh_index]
     primitive = mesh.primitives[primitive_index]
@@ -142,14 +196,10 @@ def get_vertex_positions(gltf: GLTF, mesh_index: int, primitive_index: int = 0):
     component_type = accessor.componentType
     data_type = accessor.type
 
-    if component_type == ComponentType.FLOAT:
-        component_size = 4
-        format = "f"
-    else:
-        raise ValueError("Vertex positions should have float component type!")
 
     if data_type != AccessorType.VEC3.value:
         raise ValueError(f"Vertex positions should be VEC3! Got {data_type}")
+    component_size, format = byte_size_format(component_type)
     num_components = 3
 
     vertex_data = []
