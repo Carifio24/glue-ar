@@ -3,7 +3,9 @@ import operator
 import struct
 from typing import Callable, Iterable, List, Literal, Optional, Type, TypeVar, Union
 
-from gltflib import ComponentType, Material, PBRMetallicRoughness
+from gltflib import AccessorType, ComponentType, Material, PBRMetallicRoughness
+from gltflib.gltf import GLTF
+from gltflib.gltf_resource import FileResource
 
 __all__ = [
     "GLTFIndexExportOption",
@@ -98,3 +100,63 @@ def index_mins(items, previous=None, type: Type[T] = float) -> List[List[T]]:
 
 def index_maxes(items, previous=None, type: Type[T] = float) -> List[List[T]]:
     return index_extrema(items, extremum=max, type=type, previous=previous)
+
+
+def get_buffer_data(gltf: GLTF, buffer_index: int) -> bytes:
+    model = gltf.model
+    buffers = model.buffers
+    if buffers is None:
+        raise ValueError("Model has no buffers!")
+
+    buffer = buffers[buffer_index]
+    if buffer.uri is not None:
+        resource = gltf.get_resource(uri=buffer.uri)
+        if isinstance(resource, FileResource):
+            resource.load()
+        return resource.data
+    else:
+        resource = gltf.get_glb_resource()
+        return resource.data
+
+
+def get_vertex_positions(gltf: GLTF, mesh_index: int, primitive_index: int = 0):
+    model = gltf.model
+    if (meshes := model.meshes) is None or \
+       (accessors := model.accessors) is None or \
+       (buffer_views := model.bufferViews) is None:
+        return
+
+    mesh = meshes[mesh_index]
+    primitive = mesh.primitives[primitive_index]
+    attributes = primitive.attributes
+    position_accessor_index = attributes.POSITION
+
+    accessor = accessors[position_accessor_index or 0]
+    buffer_view_index = accessor.bufferView
+    buffer_view = buffer_views[buffer_view_index or 0]
+    buffer_index = buffer_view.buffer
+    buffer_data = get_buffer_data(gltf, buffer_index)
+
+    byte_offset = (buffer_view.byteOffset or 0) + (accessor.byteOffset or 0)
+    count = accessor.count
+    component_type = accessor.componentType
+    data_type = accessor.type
+
+    if component_type == ComponentType.FLOAT:
+        component_size = 4
+        format = "f"
+    else:
+        raise ValueError("Vertex positions should have float component type!")
+
+    if data_type != AccessorType.VEC3.value:
+        raise ValueError(f"Vertex positions should be VEC3! Got {data_type}")
+    num_components = 3
+
+    vertex_data = []
+    unpack_format = f"<{num_components}{format}"
+    for i in range(count):
+        offset = byte_offset + i * num_components * component_size
+        vertex_bytes = buffer_data[offset:offset + num_components * component_size]
+        vertex = struct.unpack(unpack_format, vertex_bytes)
+        vertex_data.append(vertex)
+    return vertex_data
