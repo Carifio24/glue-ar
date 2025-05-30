@@ -98,7 +98,7 @@ class QtARExportDialog(ARExportDialogBase, QDialog):
         self._update_layer_ui(state)
 
     def _on_compression_change(self, compression: str):
-        self.ui.layer_controls.setEnabled(
+        self.ui.bool_layer_controls.setEnabled(
             self.state.modelviewer and
             compression == "None"
         )
