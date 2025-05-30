@@ -106,3 +106,30 @@ class TestQtExportDialog(BaseExportDialogTest):
         assert combobox_options(ui.combosel_method) == ["Scatter"]
         assert not ui.label_method.isVisible()
         assert not ui.combosel_method.isVisible()
+
+    def test_modelviewer_ui(self):
+        state = self.dialog.state
+        ui = self.dialog.ui
+
+        state.filetype = "glB"
+
+        state.compression = "None"
+        assert ui.bool_modelviewer.isVisible()
+        assert ui.bool_layer_controls.isVisible()
+        ui.bool_modelviewer.setChecked(True)
+        assert ui.bool_layer_controls.isEnabled()
+        ui.bool_modelviewer.setChecked(False)
+        assert not ui.bool_layer_controls.isEnabled()
+
+        for compression in ("Draco", "Meshoptimizer"):
+            state.compression = compression
+            assert ui.bool_modelviewer.isVisible()
+            assert ui.bool_layer_controls.isVisible()
+            ui.bool_modelviewer.setChecked(True)
+            assert not ui.bool_layer_controls.isEnabled()
+            ui.bool_modelviewer.setChecked(False)
+            assert not ui.bool_layer_controls.isEnabled()
+
+        state.filetype = "USDZ"
+        assert not ui.bool_modelviewer.isVisible()
+        assert not ui.bool_layer_controls.isVisible()
