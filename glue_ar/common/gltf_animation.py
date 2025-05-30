@@ -35,7 +35,7 @@ def set_up_flipbook_animation(
 
         float_size = calcsize("f")
         for index in range(n_snapshots):
-        
+
             offset = 3 * float_size * index + time_bytelen
             builder.add_buffer_view(
                 buffer=buffer_index,
