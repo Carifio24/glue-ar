@@ -38,6 +38,7 @@ GLTF_COMPRESSION_EXTENSIONS = {
     "meshoptimizer": "EXT_meshopt_compression",
 }
 
+
 def byte_size_format(component_type: ComponentType | int) -> Tuple[int, str]:
     match component_type:
         case ComponentType.UNSIGNED_BYTE:
@@ -195,7 +196,6 @@ def get_vertex_positions(gltf: GLTF, mesh_index: int, primitive_index: int = 0):
     count = accessor.count
     component_type = accessor.componentType
     data_type = accessor.type
-
 
     if data_type != AccessorType.VEC3.value:
         raise ValueError(f"Vertex positions should be VEC3! Got {data_type}")
