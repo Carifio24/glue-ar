@@ -29,6 +29,7 @@ function forceUpdate(modelViewer) {
 }
 
 const modelViewer = document.querySelector("model-viewer");
+modelViewer.shadowIntensity = 0;
 modelViewer.addEventListener("load", (_event) => {
   const layerControls = document.querySelector("#layer-controls");
   const buttons = [...layerControls.querySelectorAll("button")];
