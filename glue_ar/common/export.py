@@ -96,7 +96,8 @@ def export_modelviewer(output_path: str,
             color_mesh_index = mesh_indices[floor(len(mesh_indices) / 2)]
             material_index = builder.meshes[color_mesh_index].primitives[0].material or 0
             color = rgb_to_hex(*builder.materials[material_index].pbrMetallicRoughness.baseColorFactor[:3])
-            controls.append(f"<button data-color=\"{color}\" data-layer=\"{index}\" data-meshes=\"{meshes_string}\">{layer_id}</button>")
+            controls.append(f"<button data-color=\"{color}\" data-layer=\"{index}\" "
+                            f"data-meshes=\"{meshes_string}\">{layer_id}</button>")
         controls = "\n".join(controls)
     else:
         controls = ""

@@ -99,12 +99,12 @@ class QtARExportDialog(ARExportDialogBase, QDialog):
 
     def _on_compression_change(self, compression: str):
         self.ui.layer_controls.setEnabled(
-            self.state.modelviewer and \
+            self.state.modelviewer and
             compression == "None"
         )
 
     def _on_modelviewer_change(self, use_modelviewer: bool):
         self.ui.bool_layer_controls.setEnabled(
-            self.state.compression == "None" and \
+            self.state.compression == "None" and
             use_modelviewer
         )

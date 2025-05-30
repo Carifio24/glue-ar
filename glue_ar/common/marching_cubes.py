@@ -13,8 +13,8 @@ from glue_ar.common.usd_builder import USDBuilder
 from glue_ar.common.volume_export_options import ARIsosurfaceExportOptions
 from glue_ar.gltf_utils import add_points_to_bytearray, add_triangles_to_bytearray, index_export_option, \
                                index_mins, index_maxes
-from glue_ar.utils import BoundsWithResolution, clip_sides, export_label_for_layer, frb_for_layer, hex_to_components, isomin_for_layer, \
-                          isomax_for_layer, layer_color, unique_id
+from glue_ar.utils import BoundsWithResolution, clip_sides, export_label_for_layer, frb_for_layer, hex_to_components, \
+                          isomin_for_layer, isomax_for_layer, layer_color
 
 
 @ar_layer_export(VolumeLayerState, "Isosurface", ARIsosurfaceExportOptions, ("gltf", "glb"))
