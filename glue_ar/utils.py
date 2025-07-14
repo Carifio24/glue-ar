@@ -10,8 +10,9 @@ from glue.viewers.common.viewer import LayerArtist, Viewer
 
 from glue_vispy_viewers.common.layer_state import LayerState, VispyLayerState
 from glue_vispy_viewers.volume.volume_viewer import VispyVolumeViewerMixin
+from glue_vispy_viewers.volume.layer_artist import DataProxy
 from glue_vispy_viewers.volume.layer_state import VolumeLayerState
-from glue_vispy_viewers.volume.viewer_state import Vispy3DViewerState
+from glue_vispy_viewers.volume.viewer_state import Vispy3DViewerState, Vispy3DVolumeViewerState
 from numpy import array, inf, isnan, ndarray
 
 try:
@@ -289,16 +290,27 @@ def frb_for_layer(viewer_state: ViewerState,
                   bounds: BoundsWithResolution) -> ndarray:
 
     bounds = list(reversed(bounds))
+
+    # For VisPy layers, the data proxy already handles the FRB construction
+    # in particular for 4+ dimensional slicing cases
+    # There's no need to duplicate the logic here
+
+    if isinstance(viewer_state, Vispy3DVolumeViewerState):
+        # The call looks a bit strange here, but we can pass in a layer state
+        # for what we need
+        proxy = DataProxy(viewer_state=viewer_state, layer_artist=layer_or_state)
+        return proxy.compute_fixed_resolution_buffer(bounds=bounds)
+
+    # Otherwise, for ipyvolume we do things more explicitly (for now)
     data = data_for_layer(layer_or_state)
-    layer_state = layer_or_state if isinstance(layer_or_state, LayerState) else layer_or_state.state
-    is_data_layer = data is layer_or_state.layer
     target_data = getattr(viewer_state, 'reference_data', data)
+    layer_state = layer_or_state if isinstance(layer_or_state, LayerState) else layer_or_state.state
+    is_data_layer = data is layer_state.layer
     data_frb = data.compute_fixed_resolution_buffer(
         target_data=target_data,
         bounds=bounds,
         target_cid=layer_state.attribute
     )
-
     if is_data_layer:
         return data_frb
     else:
