@@ -7,6 +7,17 @@ from glue_ar.utils import clamp, clamp_with_resolution
 __all__ = ["RangedCallbackProperty"]
 
 
+def setup_ranged_callback(state, prop, min_value, max_value, resolution=None):
+    def set_adjusted_value(value):
+        if resolution is not None:
+            adjusted = clamp_with_resolution(value, min_value, max_value, resolution)
+        else:
+            adjusted = clamp(value, min_value, max_value)
+        return adjusted
+
+    state.add_callback(prop, set_adjusted_value, validator=True)
+
+
 class RangedCallbackProperty(CallbackProperty):
 
     def __init__(self,
