@@ -18,9 +18,15 @@
 		vertical-align: baseline;
 	}
 
+  html {
+    scroll-padding-top: 6em;
+  }
+
+  @media (pointer: fine) and (hover: hover) {
     html {
-        scroll-padding-top: 6em;
+      overscroll-behavior: none;
     }
+  }
 
 	code {
 		font-family: monospace;
@@ -3277,6 +3283,8 @@
   display: inline;
   width: fit-content;
 }
+
+
 
 @media screen and (max-width: 840px) {
     #nav {
