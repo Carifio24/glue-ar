@@ -1,10 +1,7 @@
 from contextlib import suppress
-from pkg_resources import get_distribution, DistributionNotFound
+import importlib.metadata
 
-try:
-    __version__ = get_distribution(__name__).version
-except DistributionNotFound:
-    pass
+__version__ = importlib.metadata.version("glue-ar")
 
 
 def setup_common():
