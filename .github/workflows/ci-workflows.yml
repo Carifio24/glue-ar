@@ -40,12 +40,14 @@ jobs:
         - linux: py312-test-jupyter-compression
         - linux: py312-test-qt
         - linux: py312-test-jupyter
+        - linux: py314-devdeps-both
         # - linux: py313-test-both
 
         - macos: py310-test-both-compression
         - macos: py311-test-both-compression
         - macos: py312-test-both-compression
         - macos: py312-test-qt-compression
+        - macos: py314-devdeps-both
         # - macos: py312-test-jupyter-compression
         # - macos: py313-test-both
 
