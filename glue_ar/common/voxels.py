@@ -86,23 +86,23 @@ def add_voxel_layers_gltf(builder: GLTFBuilder,
             t_voxel = clamp_with_resolution(t_voxel, 0, 1, cmap_resolution)
             adjusted_opacity = binned_opacity(layer_state.alpha * opacity_factor * t_voxel, cmap_resolution)
 
+            if adjusted_opacity == 0:
+                continue
+
             if layer_state.color_mode == "Fixed":
                 voxel_color_components = color_components
             else:
                 index = round(t_voxel / cmap_resolution)
                 voxel_color_components = voxel_colors[index]
 
-            if adjusted_opacity == 0:
-                continue
-
             indices_tpl = tuple(indices)
+            adjusted_a_color = voxel_color_components[:3] + [adjusted_opacity]
             if indices_tpl in occupied_voxels:
                 current_color = occupied_voxels[indices_tpl]
-                adjusted_a_color = voxel_color_components[:3] + [adjusted_opacity]
                 new_color = alpha_composite(adjusted_a_color, current_color)
                 occupied_voxels[indices_tpl] = new_color
             else:
-                occupied_voxels[indices_tpl] = voxel_color_components[:3] + [adjusted_opacity]
+                occupied_voxels[indices_tpl] = adjusted_a_color
 
     # Once we're done doing the alpha compositing, we want to reverse our dictionary setup
     # Right now we have (key, value) as (indices, color)
