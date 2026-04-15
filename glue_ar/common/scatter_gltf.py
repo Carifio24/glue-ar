@@ -3,7 +3,8 @@ from gltflib import AccessorType, BufferTarget, ComponentType, PrimitiveMode
 from glue.utils.array import ensure_numerical
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 from glue_vispy_viewers.scatter.layer_state import ScatterLayerState
-from numpy import ndarray
+from math import ceil
+from numpy import argwhere, ndarray, isfinite
 from numpy.linalg import norm
 
 from typing import List, Literal, Optional, Tuple
@@ -15,8 +16,9 @@ from glue_ar.common.shapes import cone_triangles, cone_points, cylinder_points, 
                                   normalize, rectangular_prism_triangulation, sphere_triangles
 from glue_ar.gltf_utils import add_points_to_bytearray, add_triangles_to_bytearray, index_export_option, \
                                index_mins, index_maxes
-from glue_ar.utils import Viewer3DState, export_label_for_layer, iterable_has_nan, hex_to_components, \
-                          layer_color, offset_triangles, unique_id, xyz_bounds, xyz_for_layer, Bounds
+from glue_ar.utils import Viewer3DState, clip_sides, export_label_for_layer, iterable_has_nan, hex_to_components, \
+                          layer_color, offset_triangles, unique_id, xyz_bounds, xyz_for_layer, Bounds, BoundsWithResolution, frb_for_layer, \
+                          isomin_for_layer, isomax_for_layer, clamp_with_resolution, binned_opacity
 from glue_ar.common.gltf_builder import GLTFBuilder
 from glue_ar.common.scatter import Scatter3DLayerState, ScatterLayerState3D, \
                                    PointsGetter, box_points_getter, IPYVOLUME_POINTS_GETTERS, \
@@ -545,6 +547,227 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
             materials=materials,
             mask=mask,
         )
+
+from glue_vispy_viewers.volume.layer_state import VolumeLayerState
+def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
+                                     viewer_state: Vispy3DViewerState,
+                                     layer_state: VolumeLayerState,
+                                     points_getter: PointsGetter,
+                                     triangles: List[Tuple[int, int, int]],
+                                     options: ARVispyScatterExportOptions,
+                                     bounds: Bounds,
+                                     points_per_mesh: int):
+
+    if layer_state is None:
+        return
+
+    bounds = bounds or xyz_bounds(viewer_state, with_resolution=False)
+    sides = clip_sides(viewer_state, clip_size=1)
+    sides = tuple(sides[i] for i in (1, 2, 0))
+
+    occupied_points = {}
+    layer_id = "Point Layers"
+
+    data = frb_for_layer(viewer_state, layer_state, bounds)
+    isomin = isomin_for_layer(viewer_state, layer_state)
+    isomax = isomax_for_layer(viewer_state, layer_state)
+
+    data[~isfinite(data)] = isomin - 1
+
+    isorange = isomax - isomin
+    nonempty_indices = argwhere(data > isomin)
+
+    # TODO: Dummy values for now
+    cmap_resolution = 0.01
+    opacity_cutoff = 0.01
+    opacity_factor = 1
+
+    if points_per_mesh is None:
+        points_per_mesh = len(data)
+
+    color = layer_color(layer_state)
+    color_components = hex_to_components(color)
+    if layer_state.color_mode == "Linear":
+        voxel_colors = layer_state.cmap([i * cmap_resolution for i in range(ceil(1 / cmap_resolution) + 1)])
+        voxel_colors = [[int(256 * float(c)) for c in vc[:3]] for vc in voxel_colors]
+
+    for indices in nonempty_indices:
+        value = data[tuple(indices)]
+        t_voxel = (value - isomin) / isorange
+        if t_voxel > 0 and hasattr(layer_state, 'stretch'):
+            t_voxel = layer_state.stretch_object([t_voxel], **layer_state.stretch_parameters)[0]
+        t_voxel = clamp_with_resolution(t_voxel, 0, 1, cmap_resolution)
+        adjusted_opacity = binned_opacity(layer_state.alpha * opacity_factor * t_voxel, cmap_resolution)
+
+        if adjusted_opacity == 0:
+           continue 
+        
+        if layer_state.color_mode == "Fixed":
+            voxel_color_components = color_components
+        else:
+            index = round(t_voxel / cmap_resolution)
+            voxel_color_components = voxel_colors[index]
+
+        indices_tpl = tuple(indices)
+        adjusted_a_color = voxel_color_components[:3] + [adjusted_opacity]
+        if indices_tpl in occupied_points:
+            current_color = occupied_points[indices_tpl]
+            new_color = alpha_composite(adjusted_a_color, current_color)
+            occupied_points[indices_tpl] = new_color
+        else:
+            occupied_points[indices_tpl] = adjusted_a_color
+
+    # Once we're done doing the alpha compositing, we want to reverse our dictionary setup
+    # Right now we have (key, value) as (indices, color)
+    # But now we want (color, indices) to do our mesh chunking
+    materials_map = {}
+    points_by_color = defaultdict(list)
+    for indices, rgba in occupied_points.items():
+        if rgba[-1] >= opacity_cutoff:
+            rgba = tuple(rgba)
+            points_by_color[rgba].append(indices)
+
+            if rgba in materials_map:
+                material_index = materials_map[rgba]
+            else:
+                material_index = builder.material_count
+                materials_map[rgba] = material_index
+                builder.add_material(
+                    rgba[:3],
+                    rgba[3],
+                )
+
+    buffer = builder.buffer_count
+    barr = bytearray()
+    for cindex, points in points_by_color.items():
+
+            # If the maximum number of points in any one color is less than our designated chunk size,
+            # we only want to make triangles for that many points (and put everything in one mesh).
+            # This is both more space-efficient and necessary to be glTF spec-compliant
+            triangle_offset = 0
+            tris = []
+            pts_count = len(points_getter((0, 0, 0), 1))
+            for _ in range(min(points_per_mesh, len(points))):
+                pt_triangles = offset_triangles(triangles, triangle_offset)
+                triangle_offset += pts_count
+                tris.append(pt_triangles)
+
+            triangles_count = len(tris)
+            mesh_points = [pt for pts in points for pt in pts]
+            mesh_triangles = [tri for sphere in tris for tri in sphere]
+            max_triangle_index = max(idx for tri in mesh_triangles for idx in tri)
+            index_format = index_export_option(max_triangle_index)
+            triangles_start = len(barr)
+            add_triangles_to_bytearray(barr, mesh_triangles, export_option=index_format)
+            triangles_len = len(barr)
+
+            builder.add_buffer_view(
+                buffer=buffer,
+                byte_length=triangles_len-triangles_start,
+                byte_offset=triangles_start,
+                target=BufferTarget.ELEMENT_ARRAY_BUFFER,
+            )
+            builder.add_accessor(
+                buffer_view=builder.buffer_view_count-1,
+                component_type=index_format.component_type,
+                count=len(mesh_triangles)*3,
+                type=AccessorType.SCALAR,
+                mins=[0],
+                maxes=[max_triangle_index],
+            )
+
+            start = 0
+            triangles_accessor = builder.accessor_count - 1
+            n_points = len(points)
+            while start < n_points:
+                mesh_points = [pt for pts in points[start:start+points_per_mesh] for pt in pts]
+                barr_offset = len(barr)
+                add_points_to_bytearray(barr, mesh_points)
+                point_mins = index_mins(mesh_points)
+                point_maxes = index_maxes(mesh_points)
+
+                builder.add_buffer_view(
+                    buffer=buffer,
+                    byte_length=len(barr)-barr_offset,
+                    byte_offset=barr_offset,
+                    target=BufferTarget.ARRAY_BUFFER,
+                )
+                builder.add_accessor(
+                    buffer_view=builder.buffer_view_count-1,
+                    component_type=ComponentType.FLOAT,
+                    count=len(mesh_points),
+                    type=AccessorType.VEC3,
+                    mins=point_mins,
+                    maxes=point_maxes,
+                )
+                points_accessor = builder.accessor_count - 1
+
+                # This should only happen on the final iteration
+                # or not at all, if points_per_mesh is a divisor of count
+                # But in this case we do need a separate accessor as the
+                # byte length is different.
+                # Note that if we're on the first chunk (start == 0)
+                # there's no need to do this - we can use the buffer view that we just created
+                count = n_points - start
+                if start != 0 and count < points_per_mesh:
+                    byte_length = count * triangles_len // triangles_count
+                    mesh_triangles = [tri for sphere in tris[:count] for tri in sphere]
+                    max_triangle_index = max(idx for tri in mesh_triangles for idx in tri)
+                    builder.add_buffer_view(
+                        buffer=buffer,
+                        byte_length=byte_length,
+                        byte_offset=triangles_start,
+                        target=BufferTarget.ELEMENT_ARRAY_BUFFER,
+                    )
+                    builder.add_accessor(
+                        buffer_view=builder.buffer_view_count-1,
+                        component_type=index_format.component_type,
+                        count=len(triangles)*3*count,
+                        type=AccessorType.SCALAR,
+                        mins=[0],
+                        maxes=[max_triangle_index],
+                    )
+                    triangles_accessor = builder.accessor_count - 1
+
+                material = color_materials[cindex]
+                builder.add_mesh(
+                    layer_id=layer_id,
+                    position_accessor=points_accessor,
+                    indices_accessor=triangles_accessor,
+                    material=material,
+                )
+                start += points_per_mesh
+
+    builder.add_buffer(byte_length=len(barr), uri=uri)
+    builder.add_file_resource(uri, data=barr)
+
+@ar_layer_export(VolumeLayerState, "Spheres", ARVispyScatterExportOptions, ("gltf", "glb"))
+def add_vispy_volume_spheres_layer_gltf(builder: GLTFBuilder,
+                                        viewer_state: Vispy3DViewerState,
+                                        layer_state: VolumeLayerState,
+                                        options: List[ARVispyScatterExportOptions],
+                                        bounds: Bounds | BoundsWithResolution):
+    resolution = int(options.resolution)
+    theta_resolution = resolution
+    phi_resolution = resolution
+    triangles = sphere_triangles(theta_resolution=theta_resolution,
+                                 phi_resolution=phi_resolution)
+    points_getter = sphere_points_getter(theta_resolution=theta_resolution,
+                                         phi_resolution=phi_resolution)
+    log_ppm = int(options.log_points_per_mesh)
+    if log_ppm == 7:
+        ppm = None
+    else:
+        ppm = 10 ** log_ppm
+
+    add_volume_spheres_layer_gltf(builder=builder,
+                                 viewer_state=viewer_state,
+                                 layer_state=layer_state,
+                                 points_getter=points_getter,
+                                 triangles=triangles,
+                                 bounds=bounds,
+                                 options=options,
+                                 points_per_mesh=ppm)
 
 
 @ar_layer_export(ScatterLayerState, "Scatter", ARVispyScatterExportOptions, ("gltf", "glb"))
