@@ -620,12 +620,14 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
     # Once we're done doing the alpha compositing, we want to reverse our dictionary setup
     # Right now we have (key, value) as (indices, color)
     # But now we want (color, indices) to do our mesh chunking
+    radius = 0.001
     materials_map = {}
     points_by_color = defaultdict(list)
     for indices, rgba in occupied_points.items():
         if rgba[-1] >= opacity_cutoff:
             rgba = tuple(rgba)
-            points_by_color[rgba].append(indices)
+            pts = points_getter(indices, radius)
+            points_by_color[rgba].append(pts)
 
             if rgba in materials_map:
                 material_index = materials_map[rgba]
@@ -639,7 +641,7 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
 
     buffer = builder.buffer_count
     barr = bytearray()
-    for cindex, points in points_by_color.items():
+    for color, points in points_by_color.items():
 
             # If the maximum number of points in any one color is less than our designated chunk size,
             # we only want to make triangles for that many points (and put everything in one mesh).
@@ -660,6 +662,8 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
             triangles_start = len(barr)
             add_triangles_to_bytearray(barr, mesh_triangles, export_option=index_format)
             triangles_len = len(barr)
+            print(triangles_len - triangles_start)
+            print(triangles_start)
 
             builder.add_buffer_view(
                 buffer=buffer,
@@ -729,7 +733,7 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
                     )
                     triangles_accessor = builder.accessor_count - 1
 
-                material = color_materials[cindex]
+                material = materials_map[color]
                 builder.add_mesh(
                     layer_id=layer_id,
                     position_accessor=points_accessor,
@@ -738,6 +742,8 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
                 )
                 start += points_per_mesh
 
+    print(len(barr))
+    uri = f"layer_{unique_id()}.bin"
     builder.add_buffer(byte_length=len(barr), uri=uri)
     builder.add_file_resource(uri, data=barr)
 
