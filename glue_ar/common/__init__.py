@@ -8,3 +8,4 @@ from .scatter_usd import add_scatter_layer_usd  # noqa: F401
 from .voxels import add_voxel_layers_gltf, add_voxel_layers_usd  # noqa: F401
 from .scatter_export_options import ARVispyScatterExportOptions  # noqa: F401
 from .volume_export_options import ARIsosurfaceExportOptions, ARVoxelExportOptions  # noqa: F401
+from .volume_usd import add_volume_layer_usd  # noqa: F401

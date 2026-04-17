@@ -2,7 +2,7 @@ from collections import defaultdict
 from os import extsep, remove
 from os.path import exists, splitext
 
-from pxr import Usd, UsdGeom, UsdLux, UsdShade, UsdUtils
+from pxr import Usd, UsdGeom, UsdLux, UsdShade, UsdUtils, UsdVol
 from typing import Dict, Iterable, Optional, Tuple
 
 from glue_ar.registries import builder
@@ -112,6 +112,26 @@ class USDBuilder:
         translate_op.Set(value=translation)
 
         return mesh
+
+    def add_volume(self,
+                   vdb_path: str,
+                   identifier: Optional[str] = None) -> UsdVol.Volume:
+
+        identifier = sanitize_path(identifier or unique_id())
+        volume_key = f"{self.default_prim_key}/volume_{identifier}"
+        volume = UsdVol.Volume.Define(self.stage, volume_key)
+
+        path = Sdf.Path(f"{self.default_prim_key}/volume_{identifier}_field")
+        prim = self.stage.DefinePrim(path, "OpenVDBAsset")
+
+        prim.CreateAttribute("filePath", Sdf.ValueTypeNames.Asset).Set(vdb_path)
+        field_name = "attribute"  # TODO: Change this?
+        prim.CreateAttribute("fieldName", Sdf.ValueTypeNames.String).Set(field_name)
+
+        relation = volume.CreateFieldRelationship(field_name)
+        relation.AddTarget(path)
+
+        return volume
 
     def export(self, filepath: str):
         base, ext = splitext(filepath)
