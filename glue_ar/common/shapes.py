@@ -69,17 +69,24 @@ def sphere_mesh_index(row: int, column: int, theta_resolution: int, phi_resoluti
 def sphere_points(center: Union[List[float], Tuple[float, float, float]],
                   radius: float,
                   theta_resolution: int = 5,
-                  phi_resolution: int = 5) -> List[Tuple[float, float, float]]:
+                  phi_resolution: int = 5,
+                  pole_index: int = 2) -> List[Tuple[float, float, float]]:
 
     # Number of points: phi_resolution * (theta_resolution - 2) + 2
+    nonpole_indices = [t for t in (0, 1, 2) if t != pole_index]
     nonpole_thetas = [i * math.pi / (theta_resolution - 1) for i in range(1, theta_resolution-1)]
     phis = [i * 2 * math.pi / phi_resolution for i in range(phi_resolution)]
     points = [(
-        center[0] + radius * math.cos(phi) * math.sin(theta),
-        center[1] + radius * math.sin(phi) * math.sin(theta),
-        center[2] + radius * math.cos(theta)
+        center[nonpole_indices[0]] + radius * math.cos(phi) * math.sin(theta),
+        center[nonpole_indices[1]] + radius * math.sin(phi) * math.sin(theta),
+        center[pole_index] + radius * math.cos(theta)
     ) for theta, phi in product(nonpole_thetas, phis)]
-    points = [(center[0], center[1], center[2] + radius)] + points + [(center[0], center[1], center[2] - radius)]
+
+    north_pole = [t for t in center]
+    south_pole = [t for t in center]
+    north_pole[pole_index] += radius
+    south_pole[pole_index] -= radius
+    points = [tuple(north_pole)] + points + [tuple(south_pole)]
 
     return points
 

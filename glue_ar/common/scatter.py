@@ -142,7 +142,8 @@ def clip_error_data(viewer_state: Viewer3DState,
 
 
 def sphere_points_getter(theta_resolution: int,
-                         phi_resolution: int) -> PointsGetter:
+                         phi_resolution: int,
+                         pole_index: int = 2) -> PointsGetter:
 
     return partial(sphere_points, theta_resolution=theta_resolution, phi_resolution=phi_resolution)
 

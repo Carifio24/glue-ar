@@ -1,4 +1,5 @@
 from collections import defaultdict
+import struct
 from gltflib import AccessorType, BufferTarget, ComponentType, PrimitiveMode
 from glue.utils.array import ensure_numerical
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
@@ -579,11 +580,12 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
 
     # TODO: Dummy values for now
     cmap_resolution = 0.01
-    opacity_cutoff = 0.01
+    opacity_cutoff = 0.15
     opacity_factor = 1
 
     if points_per_mesh is None:
-        points_per_mesh = len(data)
+        # points_per_mesh = len(data)
+        points_per_mesh = 250
 
     color = layer_color(layer_state)
     color_components = hex_to_components(color)
@@ -591,6 +593,7 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
         voxel_colors = layer_state.cmap([i * cmap_resolution for i in range(ceil(1 / cmap_resolution) + 1)])
         voxel_colors = [[int(256 * float(c)) for c in vc[:3]] for vc in voxel_colors]
 
+    print(f"Nonempty indices count: {len(nonempty_indices)}")
     for indices in nonempty_indices:
         value = data[tuple(indices)]
         t_voxel = (value - isomin) / isorange
@@ -610,6 +613,14 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
 
         indices_tpl = tuple(indices)
         adjusted_a_color = voxel_color_components[:3] + [adjusted_opacity]
+
+        # Which is "above" or "below" doesn't really matter
+        # We're effectively downsampling by a factor of 2 in z
+        above = (indices_tpl[0], indices_tpl[1], indices_tpl[2] - 1)
+        below = (indices_tpl[0], indices_tpl[1], indices_tpl[2] + 1)
+        if above in occupied_points or below in occupied_points:
+            continue 
+
         if indices_tpl in occupied_points:
             current_color = occupied_points[indices_tpl]
             new_color = alpha_composite(adjusted_a_color, current_color)
@@ -620,9 +631,10 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
     # Once we're done doing the alpha compositing, we want to reverse our dictionary setup
     # Right now we have (key, value) as (indices, color)
     # But now we want (color, indices) to do our mesh chunking
-    radius = 0.001
+    radius = 0.5
     materials_map = {}
     points_by_color = defaultdict(list)
+    print(f"Occupied points: {len(occupied_points)}")
     for indices, rgba in occupied_points.items():
         if rgba[-1] >= opacity_cutoff:
             rgba = tuple(rgba)
@@ -661,13 +673,15 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
             index_format = index_export_option(max_triangle_index)
             triangles_start = len(barr)
             add_triangles_to_bytearray(barr, mesh_triangles, export_option=index_format)
-            triangles_len = len(barr)
-            print(triangles_len - triangles_start)
-            print(triangles_start)
+            triangles_end = len(barr)
+            triangles_len = triangles_end - triangles_start
+
+            if triangles_len == 100450 and triangles_start == 128000:
+                print("triangles loop")
 
             builder.add_buffer_view(
                 buffer=buffer,
-                byte_length=triangles_len-triangles_start,
+                byte_length=triangles_len,
                 byte_offset=triangles_start,
                 target=BufferTarget.ELEMENT_ARRAY_BUFFER,
             )
@@ -683,12 +697,23 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
             start = 0
             triangles_accessor = builder.accessor_count - 1
             n_points = len(points)
+
+            # Since the total bytearray at this point may not be divisible by 4 (float bytesize)
+            # we add a bit of padding
+            off = 4 - (len(barr) % 4)
+            for _ in range(off):
+                barr.extend(struct.pack("B", 0))
+
             while start < n_points:
                 mesh_points = [pt for pts in points[start:start+points_per_mesh] for pt in pts]
+                mesh_points = [tuple(float(t) for t in pt) for pt in mesh_points]
                 barr_offset = len(barr)
                 add_points_to_bytearray(barr, mesh_points)
                 point_mins = index_mins(mesh_points)
                 point_maxes = index_maxes(mesh_points)
+
+                if len(barr) - barr_offset == 100450 and barr_offset == 128000:
+                    print("points loop")
 
                 builder.add_buffer_view(
                     buffer=buffer,
@@ -715,8 +740,11 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
                 count = n_points - start
                 if start != 0 and count < points_per_mesh:
                     byte_length = count * triangles_len // triangles_count
+                    print(n_points, start, points_per_mesh, count, triangles_len, triangles_count, triangles_start, byte_length)
                     mesh_triangles = [tri for sphere in tris[:count] for tri in sphere]
                     max_triangle_index = max(idx for tri in mesh_triangles for idx in tri)
+                    if byte_length == 100450 and triangles_start == 128000:
+                        print("last iter")
                     builder.add_buffer_view(
                         buffer=buffer,
                         byte_length=byte_length,
@@ -759,7 +787,8 @@ def add_vispy_volume_spheres_layer_gltf(builder: GLTFBuilder,
     triangles = sphere_triangles(theta_resolution=theta_resolution,
                                  phi_resolution=phi_resolution)
     points_getter = sphere_points_getter(theta_resolution=theta_resolution,
-                                         phi_resolution=phi_resolution)
+                                         phi_resolution=phi_resolution,
+                                         pole_index=0)
     log_ppm = int(options.log_points_per_mesh)
     if log_ppm == 7:
         ppm = None
