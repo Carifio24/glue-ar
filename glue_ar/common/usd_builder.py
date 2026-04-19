@@ -2,7 +2,7 @@ from collections import defaultdict
 from os import extsep, remove
 from os.path import exists, splitext
 
-from pxr import Usd, UsdGeom, UsdLux, UsdShade, UsdUtils, UsdVol
+from pxr import Sdf, Usd, UsdGeom, UsdLux, UsdShade, UsdUtils, UsdVol
 from typing import Dict, Iterable, Optional, Tuple
 
 from glue_ar.registries import builder
@@ -19,6 +19,7 @@ class USDBuilder:
     def __init__(self):
         self._create_stage()
         self._material_map: Dict[MaterialInfo, UsdShade.Shader] = {}
+        self._assets = []
 
     def _create_stage(self):
         self.stage = Usd.Stage.CreateInMemory()
@@ -121,15 +122,21 @@ class USDBuilder:
         volume_key = f"{self.default_prim_key}/volume_{identifier}"
         volume = UsdVol.Volume.Define(self.stage, volume_key)
 
-        path = Sdf.Path(f"{self.default_prim_key}/volume_{identifier}_field")
+        path = Sdf.Path(f"{volume_key}/volume_{identifier}_field")
         prim = self.stage.DefinePrim(path, "OpenVDBAsset")
 
         prim.CreateAttribute("filePath", Sdf.ValueTypeNames.Asset).Set(vdb_path)
         field_name = "attribute"  # TODO: Change this?
         prim.CreateAttribute("fieldName", Sdf.ValueTypeNames.String).Set(field_name)
+        self._assets.append(vdb_path)
 
-        relation = volume.CreateFieldRelationship(field_name)
-        relation.AddTarget(path)
+        print("OpenVDB prim:", prim.GetPath())
+        attr = prim.GetAttribute("filePath")
+        v = attr.Get()
+        print("  authored filePath:", attr.Get())
+        print("  resolved    path:", v.resolvedPath)
+
+        volume.CreateFieldRelationship(field_name, path)
 
         return volume
 
@@ -138,6 +145,7 @@ class USDBuilder:
         if ext == ".usdz":
             usdc_path = f"{base}{extsep}usdc"
             usdc_exists = exists(usdc_path)
+            print(usdc_path)
             count = 0
             while usdc_exists:
                 count += 1
@@ -145,6 +153,18 @@ class USDBuilder:
                 usdc_exists = exists(usdc_path)
             self.stage.GetRootLayer().Export(usdc_path)
             UsdUtils.CreateNewUsdzPackage(usdc_path, filepath)
+
+            stage = Usd.Stage.Open(filepath)
+            for prim in stage.Traverse():
+                if prim.GetTypeName() == "OpenVDBAsset":
+                    attr = prim.GetAttribute("filePath")
+                    v = attr.Get()  # Sdf.AssetPath
+                    print("USDC prim:", prim.GetPath())
+                    print(dir(v))
+                    print("  path:  ", v.path)
+                    print("  authoredPath:   ", v.authoredPath)
+                    print("  resolvedPath:", v.resolvedPath)
+
             remove(usdc_path)
         else:
             self.stage.GetRootLayer().Export(filepath)

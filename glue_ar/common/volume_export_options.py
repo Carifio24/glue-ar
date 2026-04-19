@@ -48,3 +48,7 @@ class ARVoxelExportOptions(State):
     #     docstring="Controls how many voxels are put into each mesh. "
     #               "Higher means a larger filesize, but better performance."
     # )
+
+
+class ARVolumeExportOptions(State):
+    pass

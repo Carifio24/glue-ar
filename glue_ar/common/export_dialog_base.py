@@ -35,6 +35,10 @@ class ARExportDialogBase:
         for layer in layers:
             method = self.state.method
             label = export_label_for_layer(layer)
+            print(type(layer.state))
+            print(self.state.filetype)
+            for m in ar_layer_export.members:
+                print(m)
             if label in self.state_dictionary:
                 _, state = self.state_dictionary[label]
             else:
@@ -74,7 +78,23 @@ class ARExportDialogBase:
             self._update_layer_ui(state)
 
     def _on_filetype_change(self, filetype: str):
-        pass
+        layer = self._layer_for_label(self.state.layer)
+        layer_name = self.state.layer
+        layer_state_cls = type(layer.state)
+        method_names = ar_layer_export.method_names(layer_state_cls, self.state.filetype)
+        if layer_name in self.state_dictionary:
+            method, state = self.state_dictionary[layer_name]
+        else:
+            method = method_names[0]
+            state = ar_layer_export.options_class(layer_state_cls, method)()
+            self.state_dictionary[layer_name] = (method, state)
+        with delay_callback(self.state, 'method'):
+            method_change = method != self.state.method
+            self.state.method_helper.choices = method_names
+            self.state.method = method
+
+        if not method_change:
+            self._update_layer_ui(state)
 
     def _on_compression_change(self, compression: str):
         pass
