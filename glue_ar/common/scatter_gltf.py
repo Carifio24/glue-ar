@@ -312,10 +312,11 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
         index_format = index_export_option(max_triangle_index)
         triangles_start = len(barr)
         add_triangles_to_bytearray(barr, mesh_triangles, export_option=index_format)
-        triangles_len = len(barr)
+        triangles_end = len(barr)
+        triangles_len = triangles_end - triangles_start
         builder.add_buffer_view(
             buffer=buffer,
-            byte_length=triangles_len-triangles_start,
+            byte_length=triangles_len,
             byte_offset=triangles_start,
             target=BufferTarget.ELEMENT_ARRAY_BUFFER,
         )
@@ -429,11 +430,12 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
             index_format = index_export_option(max_triangle_index)
             triangles_start = len(barr)
             add_triangles_to_bytearray(barr, mesh_triangles, export_option=index_format)
-            triangles_len = len(barr)
+            triangles_end = len(barr)
+            triangles_len = triangles_end - triangles_start
 
             builder.add_buffer_view(
                 buffer=buffer,
-                byte_length=triangles_len-triangles_start,
+                byte_length=triangles_end-triangles_start,
                 byte_offset=triangles_start,
                 target=BufferTarget.ELEMENT_ARRAY_BUFFER,
             )
