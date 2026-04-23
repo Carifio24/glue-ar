@@ -1,5 +1,7 @@
 from collections import defaultdict
 import struct
+from echo import ignore_callback
+from random import random
 from gltflib import AccessorType, BufferTarget, ComponentType, PrimitiveMode
 from glue.utils.array import ensure_numerical
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
@@ -549,6 +551,9 @@ def add_scatter_layer_gltf(builder: GLTFBuilder,
             mask=mask,
         )
 
+def noise(size=0.5):
+    return size * (2 * random() - 1)
+
 from glue_vispy_viewers.volume.layer_state import VolumeLayerState
 def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
                                      viewer_state: Vispy3DViewerState,
@@ -556,13 +561,13 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
                                      points_getter: PointsGetter,
                                      triangles: List[Tuple[int, int, int]],
                                      options: ARVispyScatterExportOptions,
-                                     bounds: Bounds,
+                                     bounds: BoundsWithResolution,
                                      points_per_mesh: int):
 
     if layer_state is None:
         return
 
-    bounds = bounds or xyz_bounds(viewer_state, with_resolution=False)
+    bounds = bounds or xyz_bounds(viewer_state, with_resolution=True)
     sides = clip_sides(viewer_state, clip_size=1)
     sides = tuple(sides[i] for i in (1, 2, 0))
 
@@ -631,12 +636,15 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
     # Once we're done doing the alpha compositing, we want to reverse our dictionary setup
     # Right now we have (key, value) as (indices, color)
     # But now we want (color, indices) to do our mesh chunking
-    radius = 0.5
+    # radius = 0.5
     materials_map = {}
     points_by_color = defaultdict(list)
     print(f"Occupied points: {len(occupied_points)}")
     for indices, rgba in occupied_points.items():
+        
         if rgba[-1] >= opacity_cutoff:
+            radius = 0.0625 + 1 * rgba[-1]
+            print(radius)
             rgba = tuple(rgba)
             pts = points_getter(indices, radius)
             points_by_color[rgba].append(pts)
@@ -704,9 +712,10 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
             for _ in range(off):
                 barr.extend(struct.pack("B", 0))
 
+            noise_xyz = [noise(), noise(), noise()]
             while start < n_points:
                 mesh_points = [pt for pts in points[start:start+points_per_mesh] for pt in pts]
-                mesh_points = [tuple(float(t) for t in pt) for pt in mesh_points]
+                mesh_points = [tuple(float(t) + noise_xyz[i] for i, t in enumerate(pt)) for pt in mesh_points]
                 barr_offset = len(barr)
                 add_points_to_bytearray(barr, mesh_points)
                 point_mins = index_mins(mesh_points)
@@ -740,7 +749,7 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
                 count = n_points - start
                 if start != 0 and count < points_per_mesh:
                     byte_length = count * triangles_len // triangles_count
-                    print(n_points, start, points_per_mesh, count, triangles_len, triangles_count, triangles_start, byte_length)
+                    # print(n_points, start, points_per_mesh, count, triangles_len, triangles_count, triangles_start, byte_length)
                     mesh_triangles = [tri for sphere in tris[:count] for tri in sphere]
                     max_triangle_index = max(idx for tri in mesh_triangles for idx in tri)
                     if byte_length == 100450 and triangles_start == 128000:

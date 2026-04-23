@@ -3,6 +3,7 @@ from numpy import argwhere, isfinite
 from gltflib import AccessorType, BufferTarget, ComponentType, PrimitiveMode
 from math import ceil
 from typing import List, Union
+from random import random
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 from glue_vispy_viewers.scatter.layer_state import ScatterLayerState
 from glue_vispy_viewers.volume.layer_state import VolumeLayerState
@@ -19,6 +20,10 @@ try:
     from glue_jupyter.common.state3d import ViewerState3D
 except ImportError:
     ViewerState3D = None
+
+
+def noise(size=0.5):
+    return size * (2 * random() - 1)
 
 
 def add_scatter_points_layer_gltf(builder: GLTFBuilder,
@@ -97,6 +102,7 @@ def add_scatter_points_layer_gltf(builder: GLTFBuilder,
             normalized = max(min((cval - layer_state.cmap_vmin) / crange, 1), 0)
             cindex = int(normalized * 255)
             color = cmap(cindex)
+            point = [t + noise() for t in point]
             points_by_color[color].append(point)
 
         for color, points in points_by_color.items():

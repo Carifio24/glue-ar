@@ -169,7 +169,8 @@ def layer_color(layer_state: LayerState) -> str:
 
 
 def clip_sides(viewer_state: Viewer3DState,
-               clip_size: float = 1.0) -> Tuple[float, float, float]:
+               clip_size: float = 1.0,
+               bounds=None) -> Tuple[float, float, float]:
 
     stretches = get_stretches(viewer_state)
     bounds = xyz_bounds(viewer_state, with_resolution=False)

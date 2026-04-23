@@ -118,9 +118,10 @@ def number_callback_widgets(instance: HasCallbackProperties,
     else:
         value_widgets = (slider,)
 
-    steps = round((max - min) / step)
+    steps = round((max - min + 1) / step)
     slider.setMinimum(0)
     slider.setMaximum(steps)
+    print(max, min, step, steps)
     connection = connect_value(instance, property, slider, value_range=(min, max))
 
     if cb_property.__doc__:
