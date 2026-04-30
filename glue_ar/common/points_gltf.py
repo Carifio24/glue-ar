@@ -102,7 +102,6 @@ def add_scatter_points_layer_gltf(builder: GLTFBuilder,
             normalized = max(min((cval - layer_state.cmap_vmin) / crange, 1), 0)
             cindex = int(normalized * 255)
             color = cmap(cindex)
-            point = [t + noise() for t in point]
             points_by_color[color].append(point)
 
         for color, points in points_by_color.items():
@@ -222,6 +221,8 @@ def add_volume_points_layer_gltf(builder: GLTFBuilder,
                 )
 
     for rgba, points in points_by_color.items():
+
+        points = [tuple(t + noise() for t in pt) for pt in points]
 
         uri = f"layer_{unique_id()}_{color_identifier(rgba[:3], rgba[3])}"
         barr = bytearray()
