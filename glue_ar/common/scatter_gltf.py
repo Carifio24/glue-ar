@@ -1,6 +1,5 @@
 from collections import defaultdict
 import struct
-from echo import ignore_callback
 from random import random
 from gltflib import AccessorType, BufferTarget, ComponentType, PrimitiveMode
 from glue.utils.array import ensure_numerical
@@ -19,7 +18,7 @@ from glue_ar.common.shapes import cone_triangles, cone_points, cylinder_points, 
                                   normalize, rectangular_prism_triangulation, sphere_triangles
 from glue_ar.gltf_utils import add_points_to_bytearray, add_triangles_to_bytearray, index_export_option, \
                                index_mins, index_maxes
-from glue_ar.utils import Viewer3DState, clip_sides, export_label_for_layer, iterable_has_nan, hex_to_components, \
+from glue_ar.utils import Viewer3DState, alpha_composite, bring_into_clip, clip_sides, export_label_for_layer, get_resolution, iterable_has_nan, hex_to_components, \
                           layer_color, offset_triangles, unique_id, xyz_bounds, xyz_for_layer, Bounds, BoundsWithResolution, frb_for_layer, \
                           isomin_for_layer, isomax_for_layer, clamp_with_resolution, binned_opacity
 from glue_ar.common.gltf_builder import GLTFBuilder
@@ -570,6 +569,7 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
     bounds = bounds or xyz_bounds(viewer_state, with_resolution=True)
     sides = clip_sides(viewer_state, clip_size=1)
     sides = tuple(sides[i] for i in (1, 2, 0))
+    resolution = get_resolution(viewer_state)
 
     occupied_points = {}
     layer_id = "Point Layers"
@@ -621,10 +621,10 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
 
         # Which is "above" or "below" doesn't really matter
         # We're effectively downsampling by a factor of 2 in z
-        above = (indices_tpl[0], indices_tpl[1], indices_tpl[2] - 1)
-        below = (indices_tpl[0], indices_tpl[1], indices_tpl[2] + 1)
-        if above in occupied_points or below in occupied_points:
-            continue 
+        # above = (indices_tpl[0], indices_tpl[1], indices_tpl[2] - 1)
+        # below = (indices_tpl[0], indices_tpl[1], indices_tpl[2] + 1)
+        # if above in occupied_points or below in occupied_points:
+        #     continue 
 
         if indices_tpl in occupied_points:
             current_color = occupied_points[indices_tpl]
@@ -640,12 +640,19 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
     materials_map = {}
     points_by_color = defaultdict(list)
     print(f"Occupied points: {len(occupied_points)}")
+
+    def location_for_indices(indices):
+        return tuple(-1 + index * side for index, side in zip(indices, sides))
+
     for indices, rgba in occupied_points.items():
         
         if rgba[-1] >= opacity_cutoff:
+            radius = 2 * (0.0625 + 1 * rgba[-1]) / resolution
             radius = 0.0625 + 1 * rgba[-1]
-            print(radius)
             rgba = tuple(rgba)
+            location = bring_into_clip([[t] for t in indices], bounds=bounds)
+
+            # pts = points_getter(location, radius)
             pts = points_getter(indices, radius)
             points_by_color[rgba].append(pts)
 
