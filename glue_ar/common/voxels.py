@@ -13,14 +13,19 @@ from glue_ar.common.usd_builder import USDBuilder
 from glue_ar.common.volume_export_options import ARVoxelExportOptions
 from glue_ar.usd_utils import material_for_color, sanitize_path
 from glue_ar.utils import BoundsWithResolution, alpha_composite, binned_opacity, clamp, clamp_with_resolution, \
-                          clip_sides, export_label_for_layer, frb_for_layer, hex_to_components, isomin_for_layer, \
+                          clip_sides, export_label_for_layer, frb_for_layer, get_resolution, hex_to_components, isomin_for_layer, \
                           isomax_for_layer, layer_color, offset_triangles, unique_id, xyz_bounds
 
 from glue_ar.gltf_utils import add_points_to_bytearray, add_triangles_to_bytearray, index_export_option, \
                                index_mins, index_maxes
-from glue_ar.common.shapes import rectangular_prism_points, rectangular_prism_triangulation
+from glue_ar.common.shapes import rectangular_prism_points, rectangular_prism_triangulation, sphere_points, sphere_triangles
 
 from gltflib import AccessorType, BufferTarget, ComponentType
+
+
+from random import random, randint
+def noise(size=0.5):
+    return size * (2 * random() - 1)
 
 
 @ar_layer_export(VolumeLayerState, "Voxel", ARVoxelExportOptions, ("gltf", "glb"), multiple=True)
@@ -130,8 +135,10 @@ def add_voxel_layers_gltf(builder: GLTFBuilder,
 
     tris = []
     triangle_offset = 0
-    triangles = rectangular_prism_triangulation()
-    pts_count = len(rectangular_prism_points((0, 0, 0), tuple(1 for _ in range(3))))
+    # triangles = rectangular_prism_triangulation()
+    triangles = sphere_triangles(theta_resolution=3, phi_resolution=3)
+    # pts_count = len(rectangular_prism_points((0, 0, 0), tuple(1 for _ in range(3))))
+    pts_count = len(sphere_points((0, 0, 0), 1, theta_resolution=3, phi_resolution=3))
     voxels_per_mesh = min(voxels_per_mesh, max_points_per_opacity)
     for _ in range(voxels_per_mesh):
         voxel_triangles = offset_triangles(triangles, triangle_offset)
@@ -168,10 +175,12 @@ def add_voxel_layers_gltf(builder: GLTFBuilder,
         maxes=[max_triangle_index],
     )
 
+    resolution = get_resolution(viewer_state)
     points_barr = bytearray()
     default_triangles_accessor = builder.accessor_count - 1
     for rgba, voxels in voxels_by_color.items():
 
+        radius = 2 * (0.0625 + 1 * rgba[-1]) / resolution
         triangles_accessor = default_triangles_accessor
         start = 0
         n_voxels = len(voxels)
@@ -180,7 +189,11 @@ def add_voxel_layers_gltf(builder: GLTFBuilder,
             points = []
             for indices in mesh_indices:
                 center = tuple((-1 + (index + 0.5) * side) for index, side in zip(indices, sides))
-                pts = rectangular_prism_points(center, sides)
+                noise_size = sides[0] / 2
+                noise_xyz = [noise(noise_size), noise(noise_size), noise(noise_size)]
+                center = [c + n for c, n in zip(center, noise_xyz)]
+                # pts = rectangular_prism_points(center, sides)
+                pts = sphere_points(center, radius=radius, theta_resolution=3, phi_resolution=3, pole_index=randint(0, 2))
                 points.append(pts)
 
             prev_ptbarr_len = len(points_barr)

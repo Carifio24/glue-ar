@@ -76,11 +76,13 @@ def sphere_points(center: Union[List[float], Tuple[float, float, float]],
     nonpole_indices = [t for t in (0, 1, 2) if t != pole_index]
     nonpole_thetas = [i * math.pi / (theta_resolution - 1) for i in range(1, theta_resolution-1)]
     phis = [i * 2 * math.pi / phi_resolution for i in range(phi_resolution)]
-    points = [(
-        center[nonpole_indices[0]] + radius * math.cos(phi) * math.sin(theta),
-        center[nonpole_indices[1]] + radius * math.sin(phi) * math.sin(theta),
-        center[pole_index] + radius * math.cos(theta)
-    ) for theta, phi in product(nonpole_thetas, phis)]
+    points = []
+    for theta, phi in product(nonpole_thetas, phis):
+        point = [0.0, 0.0, 0.0]
+        point[nonpole_indices[0]] = center[nonpole_indices[0]] + radius * math.cos(phi) * math.sin(theta)
+        point[nonpole_indices[1]] = center[nonpole_indices[1]] + radius * math.sin(phi) * math.sin(theta)
+        point[pole_index] = center[pole_index] + radius * math.cos(theta)
+        points.append(point)
 
     north_pole = [t for t in center]
     south_pole = [t for t in center]

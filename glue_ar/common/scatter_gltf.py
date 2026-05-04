@@ -575,6 +575,7 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
     layer_id = "Point Layers"
 
     data = frb_for_layer(viewer_state, layer_state, bounds)
+    data = data.transpose((1, 2, 0))
     isomin = isomin_for_layer(viewer_state, layer_state)
     isomax = isomax_for_layer(viewer_state, layer_state)
 
@@ -644,16 +645,19 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
     def location_for_indices(indices):
         return tuple(-1 + index * side for index, side in zip(indices, sides))
 
+    pixel_bounds = [[0, resolution, resolution] for _ in range(3)]
     for indices, rgba in occupied_points.items():
         
         if rgba[-1] >= opacity_cutoff:
-            radius = 2 * (0.0625 + 1 * rgba[-1]) / resolution
-            radius = 0.0625 + 1 * rgba[-1]
+            radius = (0.0625 + 1 * rgba[-1]) / resolution
+            # radius = 0.0625 + 1 * rgba[-1]
             rgba = tuple(rgba)
-            location = bring_into_clip([[t] for t in indices], bounds=bounds)
+            location = bring_into_clip([[t] for t in indices], bounds=pixel_bounds)
+            location = [t[0] for t in location]
+            print(indices, location)
 
-            # pts = points_getter(location, radius)
-            pts = points_getter(indices, radius)
+            pts = points_getter(location, radius)
+            # pts = points_getter(indices, radius)
             points_by_color[rgba].append(pts)
 
             if rgba in materials_map:
@@ -691,9 +695,6 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
             triangles_end = len(barr)
             triangles_len = triangles_end - triangles_start
 
-            if triangles_len == 100450 and triangles_start == 128000:
-                print("triangles loop")
-
             builder.add_buffer_view(
                 buffer=buffer,
                 byte_length=triangles_len,
@@ -728,9 +729,6 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
                 point_mins = index_mins(mesh_points)
                 point_maxes = index_maxes(mesh_points)
 
-                if len(barr) - barr_offset == 100450 and barr_offset == 128000:
-                    print("points loop")
-
                 builder.add_buffer_view(
                     buffer=buffer,
                     byte_length=len(barr)-barr_offset,
@@ -759,8 +757,6 @@ def add_volume_spheres_layer_gltf(builder: GLTFBuilder,
                     # print(n_points, start, points_per_mesh, count, triangles_len, triangles_count, triangles_start, byte_length)
                     mesh_triangles = [tri for sphere in tris[:count] for tri in sphere]
                     max_triangle_index = max(idx for tri in mesh_triangles for idx in tri)
-                    if byte_length == 100450 and triangles_start == 128000:
-                        print("last iter")
                     builder.add_buffer_view(
                         buffer=buffer,
                         byte_length=byte_length,

@@ -11,7 +11,7 @@ from glue_vispy_viewers.volume.layer_state import VolumeLayerState
 from glue_ar.common.export_options import ar_layer_export
 from glue_ar.common.scatter import Scatter3DLayerState, ScatterLayerState3D, scatter_layer_mask
 from glue_ar.gltf_utils import add_points_to_bytearray, index_mins, index_maxes
-from glue_ar.utils import Bounds, Viewer3DState, alpha_composite, binned_opacity, clamp_with_resolution, clip_sides, color_identifier, frb_for_layer, hex_to_components, \
+from glue_ar.utils import Bounds, Viewer3DState, alpha_composite, binned_opacity, bring_into_clip, clamp_with_resolution, clip_sides, color_identifier, frb_for_layer, get_resolution, hex_to_components, \
         isomin_for_layer, isomax_for_layer, layer_color, unique_id, xyz_bounds, xyz_for_layer
 from glue_ar.common.gltf_builder import GLTFBuilder
 from glue_ar.common.scatter_export_options import ARPointExportOptions
@@ -148,6 +148,7 @@ def add_volume_points_layer_gltf(builder: GLTFBuilder,
     bounds = bounds or xyz_bounds(viewer_state, with_resolution=False)
     sides = clip_sides(viewer_state, clip_size=1)
     sides = tuple(sides[i] for i in (1, 2, 0))
+    resolution = get_resolution(viewer_state)
 
     occupied_points = {}
 
@@ -208,7 +209,11 @@ def add_volume_points_layer_gltf(builder: GLTFBuilder,
     for indices, rgba in occupied_points.items():
         if rgba[-1] >= opacity_cutoff:
             rgba = tuple(rgba)
-            points_by_color[rgba].append(indices)
+
+            location = bring_into_clip([[t] for t in indices], bounds=bounds)
+            location = [t[0] for t in location]
+            print(indices, location)
+            points_by_color[rgba].append(location)
 
             if rgba in materials_map:
                 material_index = materials_map[rgba]
@@ -222,7 +227,7 @@ def add_volume_points_layer_gltf(builder: GLTFBuilder,
 
     for rgba, points in points_by_color.items():
 
-        points = [tuple(t + noise() for t in pt) for pt in points]
+        points = [tuple(t + noise(size=1 / resolution) for t in pt) for pt in points]
 
         uri = f"layer_{unique_id()}_{color_identifier(rgba[:3], rgba[3])}"
         barr = bytearray()
