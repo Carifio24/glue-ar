@@ -54,6 +54,9 @@ jupyter = [
     "glue-vispy-viewers[jupyter]",
     # Temporary - see https://github.com/widgetti/ipyvolume/issues/447
     "ipython-genutils",
+    # Missing dependency from glue-jupyter via ipyvolume
+    # We can remove once https://github.com/glue-viz/glue-jupyter/pull/570 lands in a release
+    "six",
 ]
 
 qr = [
