@@ -59,7 +59,7 @@ repos:
         exclude: "docs/.*\\.(html|glb|gltf|usdz|obj|png|jpg|jpeg)"
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.16.10"
+    rev: "v0.17.3"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
